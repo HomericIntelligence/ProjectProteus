@@ -1,0 +1,47 @@
+name: Promote Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: "Image name (e.g. myapp)"
+        required: true
+        type: string
+      source_tag:
+        description: "Source tag (e.g. staging)"
+        required: true
+        default: "staging"
+        type: string
+      dest_tag:
+        description: "Destination tag (e.g. latest)"
+        required: true
+        default: "latest"
+        type: string
+
+jobs:
+  promote:
+    name: Promote Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install skopeo
+        run: sudo apt-get update && sudo apt-get install -y skopeo
+
+      - name: Log in to registry
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | skopeo login ghcr.io \
+            --username "${{ github.actor }}" \
+            --password-stdin
+
+      - name: Promote image
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          SOURCE_TAG: ${{ inputs.source_tag }}
+          DEST_TAG: ${{ inputs.dest_tag }}
+          REGISTRY: ghcr.io/homeric-intelligence
+        run: |
+          ./scripts/promote-image.sh \
+            "${REGISTRY}/${IMAGE_NAME}:${SOURCE_TAG}" \
+            "${REGISTRY}/${IMAGE_NAME}:${DEST_TAG}"

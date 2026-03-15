@@ -1,0 +1,20 @@
+name: Cross-Repo Dispatch
+
+on:
+  repository_dispatch:
+    types: [image-pushed]
+
+jobs:
+  trigger-myrmidons-apply:
+    name: Trigger Myrmidons Apply
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dispatch apply to Myrmidons
+        env:
+          GITHUB_TOKEN: ${{ secrets.MYRMIDONS_DISPATCH_TOKEN }}
+          MYRMIDONS_REPO: HomericIntelligence/Myrmidons
+          HOST: ${{ github.event.client_payload.host }}
+        run: ./scripts/dispatch-apply.sh "$HOST"

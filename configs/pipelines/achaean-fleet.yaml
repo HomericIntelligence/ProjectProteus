@@ -1,0 +1,51 @@
+# Pipeline configuration for AchaeanFleet
+# Triggered on image push; runs tests, promotes to registry, then triggers Myrmidons apply.
+
+name: achaean-fleet
+description: >
+  Full CI/CD pipeline for AchaeanFleet service images.
+  On each image push: build → test → promote staging→latest → dispatch Myrmidons apply.
+
+on:
+  - event: image-pushed
+    repo: HomericIntelligence/AchaeanFleet
+
+registry:
+  base: ghcr.io/homeric-intelligence
+  staging_suffix: "-staging"
+
+stages:
+  - name: build
+    type: dagger
+    function: build
+    args:
+      context: "."
+      tag: "staging"
+
+  - name: test
+    type: dagger
+    function: test
+    args:
+      command: "just test"
+    depends_on: [build]
+
+  - name: promote
+    type: skopeo
+    script: scripts/promote-image.sh
+    args:
+      src: "ghcr.io/homeric-intelligence/achaean-fleet:staging"
+      dest: "ghcr.io/homeric-intelligence/achaean-fleet:latest"
+    depends_on: [test]
+
+  - name: dispatch-apply
+    type: dispatch
+    script: scripts/dispatch-apply.sh
+    args:
+      host: hermes
+    depends_on: [promote]
+
+notifications:
+  on_failure:
+    - channel: "#ci-alerts"
+  on_success:
+    - channel: "#deployments"
