@@ -60,7 +60,7 @@ Dagger calls are made via `dagger call <function> --<args>` from the justfile.
 
 1. AchaeanFleet pushes an image and sends `repository_dispatch` (type: `image-pushed`) to ProjectProteus.
 2. `cross-repo-dispatch.yml` receives the event and calls `scripts/dispatch-apply.sh`.
-3. `dispatch-apply.sh` sends a `repository_dispatch` (type: `maestro-apply`) to Myrmidons.
+3. `dispatch-apply.sh` sends a `repository_dispatch` (type: `agamemnon-apply`) to Myrmidons.
 4. Myrmidons runs `just apply` on the target host.
 
 ### Image Promotion Flow
