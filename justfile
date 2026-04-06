@@ -50,12 +50,23 @@ dispatch-apply HOST:
     GITHUB_TOKEN={{GITHUB_TOKEN}} MYRMIDONS_REPO={{MYRMIDONS_REPO}} ./scripts/dispatch-apply.sh {{HOST}}
 
 # ===========================
+# Setup
+# ===========================
+
+# Install pixi environment
+bootstrap:
+    pixi install
+
+# ===========================
 # Quality
 # ===========================
 
 # Run lint checks via Dagger
 lint:
     dagger call lint --source .
+
+# Run lint + validate together
+check: lint validate
 
 # Validate all pipeline configs in configs/pipelines/
 validate:
