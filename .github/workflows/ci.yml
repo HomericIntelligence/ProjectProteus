@@ -61,7 +61,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: cd dagger && npm ci
+        run: cd dagger && npm install
 
       - name: TypeScript type check
         run: cd dagger && npx tsc --noEmit
