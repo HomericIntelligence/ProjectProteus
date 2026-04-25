@@ -26,4 +26,12 @@ fi
 
 skopeo copy "docker://${SRC}" "docker://${DEST}"
 
-echo "Promotion complete: ${DEST}"
+echo "Verifying promotion to ${DEST}..."
+DEST_DIGEST=$(skopeo inspect "docker://${DEST}" --format '{{.Digest}}' 2>/dev/null) || {
+    echo "ERROR: Post-promotion verification failed — destination image not found or not accessible: ${DEST}" >&2
+    exit 1
+}
+echo "Promotion verified successfully."
+echo "  Source:      ${SRC}"
+echo "  Destination: ${DEST}"
+echo "  Digest:      ${DEST_DIGEST}"
