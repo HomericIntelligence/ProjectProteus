@@ -70,22 +70,23 @@ check: lint validate
 
 # Validate all pipeline configs in configs/pipelines/
 validate:
-    @echo "Validating pipeline configs..."
-    @python3 -c "
-    import yaml, sys, glob
-    files = sorted(glob.glob('configs/pipelines/*.yaml'))
-    if not files:
-        print('  No pipeline configs found.')
-        sys.exit(0)
-    errors = []
-    for f in files:
-        try:
-            yaml.safe_load(open(f))
-            print(f'  OK: {f}')
-        except Exception as e:
-            print(f'  FAIL: {f}: {e}')
-            errors.append(f)
-    if errors:
-        sys.exit(1)
-    "
-    @echo "All pipeline configs valid."
+	#!/usr/bin/env bash
+	set -euo pipefail
+	echo "Validating pipeline configs..."
+	shopt -s nullglob
+	files=(configs/pipelines/*.yaml)
+	if [ ${#files[@]} -eq 0 ]; then
+	    echo "  No pipeline configs found."
+	    exit 0
+	fi
+	errors=0
+	for f in "${files[@]}"; do
+	    if python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null; then
+	        echo "  OK: $f"
+	    else
+	        echo "  FAIL: $f"
+	        errors=$((errors + 1))
+	    fi
+	done
+	echo "All pipeline configs valid."
+	exit $errors
