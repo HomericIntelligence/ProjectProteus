@@ -4,11 +4,27 @@ on:
   repository_dispatch:
     types: [image-pushed]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: cross-repo-dispatch-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   trigger-myrmidons-apply:
     name: Trigger Myrmidons Apply
     runs-on: ubuntu-latest
     steps:
+      - name: Log inbound event payload
+        env:
+          EVENT_ACTION: ${{ github.event.action }}
+          CLIENT_PAYLOAD: ${{ toJSON(github.event.client_payload) }}
+        run: |
+          echo "Event type: ${EVENT_ACTION}"
+          echo "Client payload:"
+          echo "${CLIENT_PAYLOAD}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
