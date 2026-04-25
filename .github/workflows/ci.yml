@@ -21,20 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python (for YAML validation)
-        uses: actions/setup-python@v5
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
         with:
-          python-version: "3.12"
-
-      - name: Install PyYAML
-        run: pip install pyyaml
+          pixi-version: v0.43.4
+          cache: true
 
       - name: Validate pipeline configs
-        run: |
-          for f in configs/pipelines/*.yaml; do
-            echo "Checking $f..."
-            python3 -c "import yaml, sys; yaml.safe_load(open('$f')) and print('OK:', '$f')"
-          done
+        run: pixi run just validate
 
   lint-scripts:
     name: Lint Shell Scripts
