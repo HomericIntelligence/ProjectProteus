@@ -32,15 +32,17 @@ export class Proteus {
   /**
    * Run a test command inside a container built from the source directory.
    * Returns the combined stdout/stderr output.
+   * @param baseImage - Base image to use for the test container (default: ubuntu:22.04)
    */
   @func()
   async test(
     source: Directory,
-    command: string = "just test"
+    command: string = "just test",
+    baseImage: string = "ubuntu:22.04"
   ): Promise<string> {
     const output = await dag
       .container()
-      .from("ubuntu:22.04")
+      .from(baseImage)
       .withMountedDirectory("/src", source)
       .withWorkdir("/src")
       .withExec(["bash", "-c", command])
