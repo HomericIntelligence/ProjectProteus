@@ -3,6 +3,9 @@
 # Usage: ./scripts/promote-image.sh <source-ref> <dest-ref>
 # Example: ./scripts/promote-image.sh ghcr.io/homeric-intelligence/myapp:staging \
 #                                      ghcr.io/homeric-intelligence/myapp:latest
+#
+# Authentication: set REGISTRY_USERNAME and REGISTRY_PASSWORD env vars for
+# registry auth, or pre-authenticate via 'skopeo login' / 'docker login' before calling.
 
 set -euo pipefail
 
@@ -13,6 +16,15 @@ fi
 
 SRC="$1"
 DEST="$2"
+
+# Optional registry authentication via env vars
+if [[ -n "${REGISTRY_USERNAME:-}" && -n "${REGISTRY_PASSWORD:-}" ]]; then
+    REGISTRY=$(echo "${SRC}" | cut -d'/' -f1)
+    echo "Authenticating with registry: ${REGISTRY}"
+    echo "${REGISTRY_PASSWORD}" | skopeo login "${REGISTRY}" \
+        --username "${REGISTRY_USERNAME}" \
+        --password-stdin
+fi
 
 echo "Promoting image:"
 echo "  SRC:  $SRC"
