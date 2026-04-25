@@ -78,7 +78,7 @@ jobs:
           print(f'Validated {len(configs)} pipeline config(s)')
           " && exit 0
 
-  security/dependency-scan:
+  security-dependency-scan:
     name: security/dependency-scan
     runs-on: ubuntu-latest
     steps:
@@ -93,7 +93,7 @@ jobs:
           exit-code: '0'
           severity: CRITICAL,HIGH
 
-  security/secrets-scan:
+  security-secrets-scan:
     name: security/secrets-scan
     runs-on: ubuntu-latest
     steps:
@@ -162,7 +162,7 @@ jobs:
             xargs check-jsonschema \
               --schemafile https://json.schemastore.org/github-workflow
 
-  deps/version-sync:
+  deps-version-sync:
     name: deps/version-sync
     runs-on: ubuntu-latest
     steps:
