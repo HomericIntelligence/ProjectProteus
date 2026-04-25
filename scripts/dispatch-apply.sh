@@ -16,7 +16,7 @@ fi
 
 echo "Dispatching agamemnon-apply to ${MYRMIDONS_REPO} for host: ${HOST}"
 
-RESPONSE=$(curl --silent --write-out "\n%{http_code}" \
+RESPONSE=$(curl --silent --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --write-out "\n%{http_code}" \
     --request POST \
     --url "https://api.github.com/repos/${MYRMIDONS_REPO}/dispatches" \
     --header "Accept: application/vnd.github+json" \
