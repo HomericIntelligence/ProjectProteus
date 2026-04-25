@@ -1,0 +1,39 @@
+# Secrets
+.env
+*.env
+.env.*
+
+# Pixi
+.pixi/
+
+# Node / npm
+node_modules/
+dagger/node_modules/
+npm-debug.log*
+
+# TypeScript
+*.js.map
+dagger/dist/
+
+# Python (used by validate recipe)
+__pycache__/
+*.pyc
+*.pyo
+
+# Dagger
+.dagger/
+dagger/.dagger/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.bak
