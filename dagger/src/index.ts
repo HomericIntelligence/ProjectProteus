@@ -31,7 +31,6 @@ export class Proteus {
     source: Directory,
     command: string = "just test"
   ): Promise<string> {
-    const parts = command.split(" ")
     const output = await dag
       .container()
       .from("ubuntu:22.04")
