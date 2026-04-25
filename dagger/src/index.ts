@@ -5,21 +5,28 @@ export class Proteus {
   /**
    * Build an OCI image from a Dockerfile in the given context directory.
    * Returns the image digest.
+   * @param publish - Whether to push the image to the registry (default: true)
    */
   @func()
   async build(
     context: Directory,
     name: string,
     tag: string = "latest",
-    registry: string = "ghcr.io/homeric-intelligence"
+    registry: string = "ghcr.io/homeric-intelligence",
+    publish: boolean = true
   ): Promise<string> {
     const ref = `${registry}/${name}:${tag}`
     const image = dag
       .container()
       .build(context)
 
-    const published = await image.publish(ref)
-    return published
+    if (publish) {
+      const published = await image.publish(ref)
+      return published
+    } else {
+      const digest = await image.id()
+      return digest
+    }
   }
 
   /**
