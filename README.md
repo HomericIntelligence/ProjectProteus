@@ -1,5 +1,7 @@
 # ProjectProteus
 
+[![CI](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/ci.yml/badge.svg)](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/ci.yml)
+
 CI/CD pipeline automation hub for the HomericIntelligence ecosystem.
 
 ## Purpose
