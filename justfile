@@ -26,7 +26,7 @@ build NAME:
 
 # Run tests for a given repo using Dagger
 test NAME:
-    dagger call test --source . --command "just test"
+    dagger call test --source . --command "just test {{NAME}}"
 
 # Full pipeline: build → test → promote → dispatch
 pipeline NAME HOST="hermes": (build NAME) (test NAME)
