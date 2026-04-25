@@ -38,11 +38,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y skopeo
 
       - name: Log in to registry
+        # GITHUB_TOKEN has packages: write permission (set above) — no PAT needed for GHCR
         env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTOR: ${{ github.actor }}
         run: |
-          echo "${GHCR_TOKEN}" | skopeo login ghcr.io \
+          echo "${GITHUB_TOKEN}" | skopeo login ghcr.io \
             --username "${ACTOR}" \
             --password-stdin
 
