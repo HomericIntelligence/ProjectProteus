@@ -1,0 +1,19 @@
+# CODEOWNERS — ProjectProteus
+# These owners are automatically requested for review on PRs that touch these paths.
+
+# Default: all files
+*                               @HomericIntelligence/maintainers
+
+# Core pipeline logic
+/dagger/                        @HomericIntelligence/maintainers
+/dagger/src/index.ts            @HomericIntelligence/maintainers
+
+# Deployment scripts — high blast radius
+/scripts/dispatch-apply.sh      @HomericIntelligence/maintainers
+/scripts/promote-image.sh       @HomericIntelligence/maintainers
+
+# CI/CD workflows
+/.github/workflows/             @HomericIntelligence/maintainers
+
+# Pipeline configurations
+/configs/                       @HomericIntelligence/maintainers
