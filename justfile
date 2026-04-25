@@ -29,9 +29,9 @@ test NAME:
     dagger call test --source . --command "just test"
 
 # Full pipeline: build → test → promote → dispatch
-pipeline NAME: (build NAME) (test NAME)
+pipeline NAME HOST="hermes": (build NAME) (test NAME)
     just promote {{REGISTRY}}/{{NAME}}:{{IMAGE_TAG}}-staging {{REGISTRY}}/{{NAME}}:{{IMAGE_TAG}}
-    just dispatch-apply hermes
+    just dispatch-apply {{HOST}}
 
 # ===========================
 # Promotion
