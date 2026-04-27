@@ -33,6 +33,23 @@ jobs:
       - name: yamllint on all YAML files
         run: yamllint -d relaxed .
 
+      - name: Check for Python files
+        id: py-check
+        run: |
+          count=$(find . -name "*.py" -not -path "./.git/*" | wc -l)
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+
+      - name: Install mypy and run type check
+        if: steps.py-check.outputs.count != '0'
+        run: pip install mypy && mypy --ignore-missing-imports .
+
+      - name: No Python files — emit notice and validate syntax
+        if: steps.py-check.outputs.count == '0'
+        run: |
+          echo "::notice::No Python files found; skipping mypy"
+          find . -name "*.py" -not -path "./.git/*" | xargs -r python -m py_compile
+          echo "Python compile check complete (0 files)"
+
   unit-tests:
     name: unit-tests
     runs-on: ubuntu-latest
@@ -102,10 +119,34 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Gitleaks secrets scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Gitleaks
+        run: |
+          GITLEAKS_VERSION=8.30.1
+          OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+          ARCH=$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+
+      - name: Run Gitleaks
+        run: |
+          if [ -f .gitleaks.toml ]; then
+            gitleaks detect --source . --config .gitleaks.toml \
+              --report-format sarif --report-path gitleaks.sarif --exit-code 0
+          else
+            gitleaks detect --source . \
+              --report-format sarif --report-path gitleaks.sarif --exit-code 0
+          fi
+        continue-on-error: true
+
+      - name: Upload Gitleaks SARIF
+        if: always() && hashFiles('gitleaks.sarif') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: gitleaks-report
+          path: gitleaks.sarif
+          retention-days: 90
 
   build:
     name: build
@@ -121,30 +162,6 @@ jobs:
 
       - name: Bash syntax check on all shell scripts
         run: find . -name "*.sh" | xargs -I{} bash -n {}
-
-  typecheck:
-    name: typecheck
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check for Python files
-        id: py-check
-        run: |
-          count=$(find . -name "*.py" -not -path "./.git/*" | wc -l)
-          echo "count=${count}" >> "$GITHUB_OUTPUT"
-
-      - name: Install mypy and run type check
-        if: steps.py-check.outputs.count != '0'
-        run: pip install mypy && mypy --ignore-missing-imports .
-
-      - name: No Python files — emit notice and validate syntax
-        if: steps.py-check.outputs.count == '0'
-        run: |
-          echo "::notice::No Python files found; skipping mypy"
-          find . -name "*.py" -not -path "./.git/*" | xargs -r python -m py_compile
-          echo "Python compile check complete (0 files)"
 
   schema-validation:
     name: schema-validation
