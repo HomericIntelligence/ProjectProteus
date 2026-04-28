@@ -57,7 +57,7 @@ jobs:
           cache-dependency-path: dagger/package-lock.json
 
       - name: Install dependencies
-        run: cd dagger && npm install
+        run: cd dagger && npm ci
 
       - name: TypeScript type check
         run: cd dagger && npx tsc --noEmit
