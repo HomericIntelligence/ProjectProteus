@@ -16,9 +16,8 @@ export class Proteus {
     publish: boolean = true
   ): Promise<string> {
     const ref = `${registry}/${name}:${tag}`
-    const image = dag
-      .container()
-      .build(context)
+    const image = context
+      .dockerBuild()
 
     if (publish) {
       const published = await image.publish(ref)
