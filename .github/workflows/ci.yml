@@ -1,3 +1,4 @@
+# CI workflow for ProjectProteus
 name: CI
 
 on:
