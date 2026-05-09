@@ -235,6 +235,19 @@ See [SECURITY.md](SECURITY.md) for the responsible disclosure process.
 
 Please review our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
 
+## CI Pipeline Data & Privacy
+
+ProjectProteus CI pipelines process the following developer metadata:
+
+- **Commit emails and GitHub usernames** — included in Git commit objects and GitHub Actions event payloads
+- **Timing metadata** — workflow run durations and timestamps recorded by GitHub Actions
+- **SARIF artifacts** — static-analysis results retained for **90 days** (configured in `.github/workflows/_required.yml`)
+- **CI logs** — retained per the [GitHub Actions log retention policy](https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration#artifact-and-log-retention-policy) (default 90 days)
+
+This data is used solely for CI/CD automation, code quality enforcement, and audit purposes within the HomericIntelligence organization. It is not shared with third parties beyond the GitHub platform itself.
+
+If you have questions about data handling, contact <security@homericintelligence.com>.
+
 ---
 
 Thank you for contributing to ProjectProteus!
