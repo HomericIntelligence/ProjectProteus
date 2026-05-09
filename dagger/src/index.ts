@@ -51,28 +51,43 @@ export class Proteus {
   }
 
   /**
-   * Run lint checks against the source directory.
-   * Uses shellcheck for shell scripts and tsc for TypeScript.
-   * Returns combined lint output.
+   * Run shellcheck against all shell scripts in the source directory.
+   * Returns shellcheck output.
    */
   @func()
-  async lint(source: Directory): Promise<string> {
-    const shellcheck = await dag
+  async lintShellcheck(source: Directory): Promise<string> {
+    return dag
       .container()
       .from("koalaman/shellcheck-alpine:stable")
       .withMountedDirectory("/src", source)
       .withWorkdir("/src")
       .withExec(["sh", "-c", "find scripts/ -name '*.sh' | xargs shellcheck"])
       .stdout()
+  }
 
-    const tsc = await dag
+  /**
+   * Run tsc type-check against the Dagger TypeScript sources.
+   * Returns tsc output.
+   */
+  @func()
+  async lintTsc(source: Directory): Promise<string> {
+    return dag
       .container()
       .from("node:20-alpine")
       .withMountedDirectory("/src", source)
       .withWorkdir("/src/dagger")
       .withExec(["sh", "-c", "npm ci && npx tsc --noEmit"])
       .stdout()
+  }
 
+  /**
+   * Run all lint checks against the source directory (shellcheck + tsc).
+   * Returns combined lint output.
+   */
+  @func()
+  async lint(source: Directory): Promise<string> {
+    const shellcheck = await this.lintShellcheck(source)
+    const tsc = await this.lintTsc(source)
     return `=== shellcheck ===\n${shellcheck}\n=== tsc ===\n${tsc}`
   }
 }
