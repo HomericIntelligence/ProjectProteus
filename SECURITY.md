@@ -10,7 +10,7 @@ We take security seriously. If you discover a security vulnerability, please rep
 
 ### Email (Preferred)
 
-Send an email to: **<4211002+mvillmow@users.noreply.github.com>**
+Send an email to: **<security@homericintelligence.com>**
 
 Or use the GitHub private vulnerability reporting feature if available.
 
@@ -122,7 +122,7 @@ When contributing to ProjectProteus:
 For security-related questions that are not vulnerability reports:
 
 - Open a GitHub Discussion with the "security" tag
-- Email: <4211002+mvillmow@users.noreply.github.com>
+- Email: <security@homericintelligence.com>
 
 ---
 
