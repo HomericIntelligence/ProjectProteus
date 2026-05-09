@@ -1,5 +1,30 @@
 {
   "enabledPlugins": {
     "hephaestus@ProjectHephaestus": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && just validate 2>&1 | tail -20"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(just:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(pixi:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)"
+    ]
   }
 }
