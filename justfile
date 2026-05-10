@@ -81,7 +81,7 @@ validate:
 	fi
 	errors=0
 	for f in "${files[@]}"; do
-	    if python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null; then
+	    if pixi run python -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null; then
 	        echo "  OK: $f"
 	    else
 	        echo "  FAIL: $f"

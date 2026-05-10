@@ -63,7 +63,8 @@ ProjectProteus/
 │       └── index.ts        # Dagger TypeScript pipeline module
 ├── scripts/
 │   ├── promote-image.sh    # Skopeo image copy helper
-│   └── dispatch-apply.sh   # GitHub API dispatch trigger
+│   ├── dispatch-apply.sh   # GitHub API dispatch trigger
+│   └── check-symlinks.sh   # Verify all repo symlinks resolve
 ├── configs/
 │   └── pipelines/
 │       └── achaean-fleet.yaml  # Per-repo pipeline config
@@ -77,6 +78,14 @@ ProjectProteus/
 ├── CLAUDE.md
 └── README.md
 ```
+
+## Scripts
+
+The `scripts/` directory contains helper utilities used by `just` recipes and CI:
+
+- **`promote-image.sh`** — Copies an OCI image between registries using Skopeo. Invoked by `just promote SRC DEST`. Honors `REGISTRY_USERNAME` / `REGISTRY_PASSWORD` for auth.
+- **`dispatch-apply.sh`** — Sends a `repository_dispatch` event to Myrmidons to trigger an apply against a host. Invoked by `just dispatch-apply HOST`.
+- **`check-symlinks.sh`** — Walks the repo (excluding `.git/`) and fails if any symlink points to a missing target. Run manually or wired into CI to catch broken submodule/config links early.
 
 ## Prerequisites
 
