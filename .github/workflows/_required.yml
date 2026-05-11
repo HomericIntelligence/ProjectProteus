@@ -50,6 +50,60 @@ jobs:
           find . -name "*.py" -not -path "./.git/*" | xargs -r python -m py_compile
           echo "Python compile check complete (0 files)"
 
+  forbid-suppressions:
+    name: forbid-suppressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Reject silent-failure workaround in shell/YAML/Dockerfile/justfile/HCL"
+        run: |
+          # Matches the forbidden idiom at end of line or before a trailing
+          # comment. See docs/runbooks/no-silent-failures.md (ported from
+          # HomericIntelligence/Odysseus#280).
+          set -euo pipefail
+          mapfile -t files < <(git ls-files \
+            -- \
+            '*.sh' '*.bash' '*.yml' '*.yaml' '*.hcl' \
+            'Dockerfile*' '**/Dockerfile*' \
+            'justfile' '**/justfile' 'Justfile' '**/Justfile')
+          # Skip the runbook (documents the rule and quotes the forbidden idiom)
+          # and this workflow file itself (heredoc would otherwise self-match).
+          declare -a scan_files=()
+          for f in "${files[@]}"; do
+            case "$f" in
+              docs/runbooks/no-silent-failures.md) continue ;;
+              .github/workflows/_required.yml) continue ;;
+            esac
+            scan_files+=("$f")
+          done
+          if [ "${#scan_files[@]}" -eq 0 ]; then
+            echo "No files to scan"
+            exit 0
+          fi
+          if grep -nE '\|\|[[:space:]]*true([[:space:]]*$|[[:space:]]+#)' "${scan_files[@]}"; then
+            echo ""
+            echo '::error::Found silent-failure workarounds above. Refactor per docs/runbooks/no-silent-failures.md.'
+            exit 1
+          fi
+          echo 'OK: no silent-failure workarounds found'
+
+      - name: "Reject continue-on-error workflow opt-out"
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(git ls-files -- '.github/workflows/*.yml' '.github/workflows/*.yaml')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No workflow files"
+            exit 0
+          fi
+          if grep -nE '^[[:space:]]*continue-on-error:[[:space:]]*true[[:space:]]*$' "${files[@]}"; then
+            echo ""
+            echo '::error::Found "continue-on-error: true" above. Fix the root cause per docs/runbooks/no-silent-failures.md.'
+            exit 1
+          fi
+          echo 'OK: no "continue-on-error: true" found'
+
   unit-tests:
     name: unit-tests
     runs-on: ubuntu-24.04
@@ -131,6 +185,9 @@ jobs:
 
       - name: Run Gitleaks
         run: |
+          # `--exit-code 0` makes gitleaks always exit 0 even when secrets are
+          # found; the SARIF upload (next step) is the authoritative report.
+          # See docs/runbooks/no-silent-failures.md (Bucket E).
           if [ -f .gitleaks.toml ]; then
             gitleaks detect --source . --config .gitleaks.toml \
               --report-format sarif --report-path gitleaks.sarif --exit-code 0
@@ -138,7 +195,6 @@ jobs:
             gitleaks detect --source . \
               --report-format sarif --report-path gitleaks.sarif --exit-code 0
           fi
-        continue-on-error: true
 
       - name: Upload Gitleaks SARIF
         if: always() && hashFiles('gitleaks.sarif') != ''
@@ -174,11 +230,20 @@ jobs:
         run: pip install check-jsonschema
 
       - name: Validate GitHub workflow files against schema
-        continue-on-error: true
         run: |
-          find .github/workflows -name "*.yml" | \
-            xargs check-jsonschema \
-              --schemafile https://json.schemastore.org/github-workflow
+          # Validation is advisory: schemastore is sometimes stale relative to
+          # new Actions syntax. Emit a workflow warning on mismatch but do not
+          # fail the job. Explicit `if`-guard replaces the prior
+          # `continue-on-error: true` (Bucket E, docs/runbooks/no-silent-failures.md).
+          set -euo pipefail
+          if find .github/workflows -name "*.yml" | \
+              xargs check-jsonschema \
+                --schemafile https://json.schemastore.org/github-workflow
+          then
+            echo "OK: workflow files match schemastore schema"
+          else
+            echo "::warning::Workflow schema validation reported issues (advisory)."
+          fi
 
   deps-version-sync:
     name: deps/version-sync
