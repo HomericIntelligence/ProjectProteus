@@ -27,7 +27,8 @@ ProjectProteus/
 │   └── tsconfig.json
 ├── scripts/
 │   ├── promote-image.sh    # skopeo copy wrapper
-│   └── dispatch-apply.sh   # GitHub API repository_dispatch sender
+│   ├── dispatch-apply.sh   # GitHub API repository_dispatch sender
+│   └── check-symlinks.sh   # verify all repo symlinks resolve (run in CI symlink-check job)
 ├── configs/
 │   └── pipelines/
 │       └── achaean-fleet.yaml  # Pipeline config for AchaeanFleet
