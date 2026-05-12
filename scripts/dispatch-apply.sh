@@ -24,8 +24,10 @@ RESPONSE=$(curl --silent --connect-timeout 10 --max-time 30 --retry 3 --retry-de
     --header "X-GitHub-Api-Version: 2022-11-28" \
     --data "{\"event_type\":\"agamemnon-apply\",\"client_payload\":{\"host\":\"${HOST}\"}}")
 
-HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-BODY=$(echo "$RESPONSE" | head -n-1)
+HTTP_CODE=$(printf '%s' "$RESPONSE" | tail -n1)
+# Use sed to drop the last line (HTTP code) — portable across GNU and BSD
+# (BSD `head` does not support the GNU-only `-n-1` extension).
+BODY=$(printf '%s' "$RESPONSE" | sed '$d')
 
 if [[ "$HTTP_CODE" -eq 204 ]]; then
     echo "Dispatch successful (204 No Content). Myrmidons apply triggered for host: ${HOST}"
