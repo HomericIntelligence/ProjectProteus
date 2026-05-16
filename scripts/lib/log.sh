@@ -29,7 +29,13 @@ _proteus_log_ts() {
 _proteus_log_emit() {
   local level="$1"; shift
   local fd="$1"; shift
-  local fmt="$1"; shift || true
+  local fmt="$1"
+  # `shift` after consuming the format string may have no remaining
+  # arguments; that is intentional, so guard with a positional check
+  # rather than the forbidden `|| true` silent-failure idiom.
+  if [ "$#" -gt 0 ]; then
+    shift
+  fi
   # shellcheck disable=SC2059
   printf '%s level=%s script=%s message="%s"\n' \
     "$(_proteus_log_ts)" \
