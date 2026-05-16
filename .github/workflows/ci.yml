@@ -15,21 +15,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate Pipeline Configs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@1b2de7f3351f171c8b4dfeb558c639cb58ed4ec0  # v0.9.5
-        with:
-          pixi-version: v0.67.2
-          cache: true
-
-      - name: Validate pipeline configs
-        run: pixi run just validate
+  # NOTE: a separate `validate` job that ran `pixi run just validate`
+  # previously lived here. It duplicated the `unit-tests` /
+  # `integration-tests` jobs in `_required.yml`, which already YAML-parse
+  # every pipeline config and verify references to workflow names.
+  # Closes #106. If a richer schema validation step is reintroduced,
+  # prefer extending `_required.yml` (single source of truth) rather than
+  # splitting validation across two workflows.
 
   lint-scripts:
     name: Lint Shell Scripts
