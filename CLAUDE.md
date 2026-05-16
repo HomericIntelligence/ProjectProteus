@@ -72,6 +72,35 @@ Build (dagger call build) → Test (dagger call test) → Promote (skopeo copy) 
 
 This full pipeline is invoked with `just pipeline NAME`.
 
+## Known Critical Defects
+
+The following defects are open and **load-bearing** — agents working in
+this repo should know about them before changing behaviour in the
+affected areas. Always check the linked issue for the current status
+before assuming the defect is unfixed.
+
+- **Cross-repo dispatch payload contract mismatch.** `cross-repo-dispatch.yml`
+  reads `client_payload.host`, but no documented upstream emitter currently
+  sends that field consistently. See #15, #84.
+- **Build/promote tag arithmetic broken.** The build and promote scripts
+  produce incorrect tags in edge cases (multi-arch, no-tag input). See
+  #2, #83.
+- **Pipeline YAML configs are not consumed.** `configs/pipelines/*.yaml`
+  is parsed only by `just validate`; no production code reads it.
+  See #1, #82.
+- **CI unit/integration "jobs" are YAML parsers, not tests.** Until #88
+  / #89 / #5 land, do not rely on the green CI badge as evidence of
+  Dagger function correctness.
+- **GitHub Actions security gaps.** Gitleaks runs with
+  `continue-on-error` (#86); Trivy runs with `exit-code: 0` (#85).
+  Treat absence of a failure as inconclusive.
+- **Branch protection partial.** PRs require zero reviews (#95); no
+  CODEOWNERS enforcement (#102). See `docs/branch-protection.md` for
+  the target state.
+
+Agents must not silently work around these defects; instead, link the
+relevant issue from any PR that touches the affected code.
+
 ## Development Guidelines
 
 - All Dagger functions must be tested locally with `dagger call` before committing.
