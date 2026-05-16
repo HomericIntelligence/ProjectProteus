@@ -35,7 +35,7 @@ fi
 
 log "Installing dagger node module dependencies"
 if [ -d /workspaces/ProjectProteus/dagger ]; then
-  (cd /workspaces/ProjectProteus/dagger && npm ci || npm install)
+  ( cd /workspaces/ProjectProteus/dagger && { npm ci || npm install; } )
 fi
 
 log "post-create complete"
