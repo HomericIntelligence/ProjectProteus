@@ -35,6 +35,9 @@ jobs:
         with:
           scandir: "./scripts"
 
+      - name: Verify issue #92 invariants
+        run: bash scripts/verify-issue-92-invariants.sh
+
   typecheck:
     name: TypeScript Type Check
     runs-on: ubuntu-latest
