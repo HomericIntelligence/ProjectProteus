@@ -75,27 +75,37 @@ export class Proteus {
 
   /**
    * Run tsc type-check against the Dagger TypeScript sources.
-   * Returns tsc output.
+   * Mounts only the dagger/ subdirectory (not the full repo) and caches the
+   * npm download cache across invocations via a Dagger cache volume.
+   * node_modules is recreated each run by npm ci (by design). Fixes #92.
    */
   @func()
   async lintTsc(source: Directory): Promise<string> {
+    const daggerDir = source.directory("dagger")
     return dag
       .container()
       .from("node:20-alpine")
-      .withMountedDirectory("/src", source)
-      .withWorkdir("/src/dagger")
-      .withExec(["sh", "-c", "npm ci && npx tsc --noEmit"])
+      .withMountedCache("/root/.npm", dag.cacheVolume("proteus-npm-cache"))
+      .withWorkdir("/work")
+      .withFile("/work/package.json", daggerDir.file("package.json"))
+      .withFile("/work/package-lock.json", daggerDir.file("package-lock.json"))
+      .withExec(["npm", "ci", "--prefer-offline", "--no-audit"])
+      .withMountedDirectory("/work/src", daggerDir.directory("src"))
+      .withFile("/work/tsconfig.json", daggerDir.file("tsconfig.json"))
+      .withExec(["npx", "tsc", "--noEmit"])
       .stdout()
   }
 
   /**
    * Run all lint checks against the source directory (shellcheck + tsc).
-   * Returns combined lint output.
+   * Returns a JSON object with keys 'shellcheck' and 'tsc', each containing
+   * the respective linter output. Callers wanting a single linter should call
+   * lintShellcheck() or lintTsc() directly. Fixes #92.
    */
   @func()
   async lint(source: Directory): Promise<string> {
     const shellcheck = await this.lintShellcheck(source)
     const tsc = await this.lintTsc(source)
-    return `=== shellcheck ===\n${shellcheck}\n=== tsc ===\n${tsc}`
+    return JSON.stringify({ shellcheck, tsc }, null, 2)
   }
 }

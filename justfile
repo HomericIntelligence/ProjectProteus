@@ -65,6 +65,10 @@ bootstrap:
 lint:
     dagger call lint --source .
 
+# Static check that issue #92's lintTsc invariants are still present
+lint-verify-92:
+    bash scripts/verify-issue-92-invariants.sh
+
 # Run lint + validate together
 check: lint validate
 
