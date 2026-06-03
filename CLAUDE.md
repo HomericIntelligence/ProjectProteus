@@ -79,9 +79,11 @@ this repo should know about them before changing behaviour in the
 affected areas. Always check the linked issue for the current status
 before assuming the defect is unfixed.
 
-- **Cross-repo dispatch payload contract mismatch.** `cross-repo-dispatch.yml`
-  reads `client_payload.host`, but no documented upstream emitter currently
-  sends that field consistently. See #15, #84.
+- **Cross-repo dispatch payload contract.** `cross-repo-dispatch.yml`
+  treats `client_payload.host` as REQUIRED and the workflow fails closed
+  with `::error::` if it is absent (#84). Upstream alignment so
+  AchaeanFleet actually emits `host` is tracked in #15; this entry stays
+  until that lands. Canonical schema: `docs/dispatch-contract.md`.
 - **Build/promote tag arithmetic broken.** The build and promote scripts
   produce incorrect tags in edge cases (multi-arch, no-tag input). See
   #2, #83.

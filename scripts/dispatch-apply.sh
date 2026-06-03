@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 # dispatch-apply.sh — Send a repository_dispatch event to trigger Myrmidons apply.
-# Usage: HOST=hermes GITHUB_TOKEN=<token> MYRMIDONS_REPO=HomericIntelligence/Myrmidons \
+# Usage: HOST=<host> GITHUB_TOKEN=<token> MYRMIDONS_REPO=HomericIntelligence/Myrmidons \
 #            ./scripts/dispatch-apply.sh [host]
 # The HOST argument overrides the HOST env var if both are provided.
+# If neither is set, the script FAILS CLOSED (exits 1) — see docs/dispatch-contract.md.
 
 set -euo pipefail
 
-HOST="${1:-${HOST:-hermes}}"
+HOST="${1:-${HOST:-}}"
 MYRMIDONS_REPO="${MYRMIDONS_REPO:-HomericIntelligence/Myrmidons}"
+
+if [[ -z "${HOST}" ]]; then
+    echo "Error: host is required (pass as \$1 or set HOST env var). See docs/dispatch-contract.md (#84)." >&2
+    exit 1
+fi
 
 if [[ -z "${GITHUB_TOKEN:-}" ]]; then
     echo "Error: GITHUB_TOKEN is required." >&2
