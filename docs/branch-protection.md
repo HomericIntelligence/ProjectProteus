@@ -41,7 +41,9 @@ authoritative required set:
 - `unit-tests` (YAML schema validation; to be replaced by real tests — #88)
 - `integration-tests` (cross-config reference check; to be expanded — #89)
 - `markdownlint` (docs lint)
-- Any future SAST / secrets-scan job once #85, #86 are fixed
+- `security/npm-audit` (npm audit for known CVEs — #23)
+- `security/secrets-scan` (Gitleaks SARIF upload + PR gating — #23, #86)
+- `CodeQL / javascript-typescript` (SAST for TypeScript — #23)
 
 A required status check that does not actually run on a PR will block
 merges; whenever a check is renamed, this list must be updated in the
