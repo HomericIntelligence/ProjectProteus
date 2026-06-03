@@ -149,6 +149,15 @@ jobs:
           print(f'Validated {len(configs)} pipeline config(s)')
           " && exit 0
 
+  dispatch-contract-test:
+    name: dispatch-contract-test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - name: Run dispatch-apply shell tests
+        run: bash tests/dispatch-apply.test.sh
+
   security-dependency-scan:
     name: security/dependency-scan
     runs-on: ubuntu-24.04

@@ -42,10 +42,9 @@ client_payload:
 ProjectProteus reads `client_payload.host` in
 `.github/workflows/cross-repo-dispatch.yml` and invokes
 `scripts/dispatch-apply.sh` to forward the apply request to Myrmidons.
-
-The contract for `client_payload` is currently under-specified — see
-the issue backlog for the payload contract mismatch (#15, #84) and the
-known-defects list in `CLAUDE.md`.
+`host` is REQUIRED — the workflow fails closed with `::error::` if it is
+absent (issue #84). The full payload contract lives in
+`docs/dispatch-contract.md`. Upstream emitter alignment is tracked in #15.
 
 ## Outbound handoff (Proteus → Myrmidons)
 

@@ -25,9 +25,11 @@ upstream) emits `repository_dispatch: image-pushed`.
 2. Open the `Log inbound event payload` step. Verify:
    - `Event type` is `image-pushed`.
    - `Client payload` contains a `host` field.
-3. If `host` is empty or missing, the contract mismatch in #15/#84 is
-   the cause. Mitigation: re-issue the upstream dispatch with the
-   payload corrected; track via the cross-repo dispatch contract issue.
+3. If `host` is empty or missing, the `Require client_payload.host` step
+   will have failed with an `::error title=dispatch-contract::` annotation
+   (issue #84). This is intentional fail-closed behavior — no apply is
+   dispatched. Mitigation: re-issue the upstream dispatch with `host` set,
+   per `docs/dispatch-contract.md`.
 
 ## Step 2 — Verify the dispatch token
 
