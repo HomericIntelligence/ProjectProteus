@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Argv-recording stub for skopeo used by tests/shell/*.bats.
+#   STUB_FAIL_INSPECT_SOURCE=1 → fails the inspect call WITHOUT --format.
+#   STUB_FAIL_INSPECT_DEST=1   → fails the inspect call WITH --format.
+# Discrimination matches the semantic difference between
+# scripts/promote-image.sh:50 (source existence check, no --format)
+# and scripts/promote-image.sh:58 (post-copy digest fetch, has --format).
+echo "skopeo $*" >> "${STUB_LOG:-/dev/null}"
+
+if [[ "${1:-}" == "inspect" ]]; then
+  if [[ " $* " == *" --format "* ]]; then
+    # Destination inspect (post-copy digest fetch).
+    if [[ "${STUB_FAIL_INSPECT_DEST:-0}" == "1" ]]; then
+      exit 1
+    fi
+    echo "sha256:stubdigest"
+  else
+    # Source inspect (existence check).
+    if [[ "${STUB_FAIL_INSPECT_SOURCE:-0}" == "1" ]]; then
+      exit 1
+    fi
+  fi
+fi
+
+exit 0

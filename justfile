@@ -90,3 +90,22 @@ validate:
 	done
 	echo "All pipeline configs valid."
 	exit $errors
+
+# ===========================
+# Tests
+# ===========================
+
+# Run TypeScript unit tests (Vitest) for the Dagger module
+test-unit:
+    cd dagger && npm test
+
+# Run Bats shell-script tests
+test-shell:
+    pixi run bats tests/shell
+
+# Run Python integration tests (pipeline-config consumption)
+test-integration:
+    pixi run pytest tests/integration -v
+
+# Run the entire test suite
+test-all: test-unit test-shell test-integration

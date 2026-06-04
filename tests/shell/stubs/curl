@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Argv-recording stub for curl used by tests/shell/dispatch-apply.bats.
+{
+  echo "curl $*"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --data) echo "data=$2"; shift 2 ;;
+      --url)  echo "url=$2";  shift 2 ;;
+      *) shift ;;
+    esac
+  done
+} >> "${STUB_LOG:-/dev/null}"
+
+# dispatch-apply.sh:19 uses --write-out "\n%{http_code}" so the response
+# is body + newline + HTTP code on the last line.
+echo ""
+echo "204"
+exit 0

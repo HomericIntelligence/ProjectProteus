@@ -108,6 +108,7 @@ relevant issue from any PR that touches the affected code.
 - Scripts in `scripts/` must be executable and pass `shellcheck`.
 - Keep the Dagger module typed — no `any` in TypeScript.
 - Use `set -euo pipefail` in all bash scripts.
+- Tests live under `tests/shell/` (Bats), `tests/integration/` (pytest), and `dagger/src/*.test.ts` (Vitest). Run all via `just test-all`. Add a failing test before fixing any defect listed under "Known Critical Defects". Test files are subject to the same "no `any` in TypeScript" rule as the rest of `dagger/src/`.
 
 ## Common Commands
 
