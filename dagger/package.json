@@ -5,15 +5,18 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@dagger.io/dagger": "0.20.8"
+    "@dagger.io/dagger": "0.21.3"
   },
   "devDependencies": {
     "typescript": "~6.0.3",
     "ts-node": "^10.9.0",
-    "@types/node": "^20.14.0"
+    "@types/node": "^25.9.1",
+    "vitest": "^2.1.0",
+    "@vitest/coverage-v8": "^2.1.0"
   },
   "engines": {
     "node": ">=20"

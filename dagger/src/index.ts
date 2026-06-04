@@ -4,8 +4,12 @@ import { dag, Container, Directory, object, func } from "@dagger.io/dagger"
 export class Proteus {
   /**
    * Build an OCI image from a Dockerfile in the given context directory.
-   * Returns the image digest.
-   * @param publish - Whether to push the image to the registry (default: false; opt-in to avoid surprising local pushes — see #91)
+   * Returns the image digest. When `publish=true`, pushes to
+   * `${registry}/${name}:${tag}-staging` ONLY — promotion to `:${tag}` is the
+   * explicit responsibility of `scripts/promote-image.sh` (see #2). Splitting
+   * build from production-publish keeps build() single-responsibility and makes
+   * promotion an auditable step.
+   * @param publish - Whether to push the staging image (default: false)
    */
   @func()
   async build(
@@ -15,7 +19,7 @@ export class Proteus {
     registry: string = "ghcr.io/homeric-intelligence",
     publish: boolean = false
   ): Promise<string> {
-    const ref = `${registry}/${name}:${tag}`
+    const ref = `${registry}/${name}:${tag}-staging`
     const image = context
       .dockerBuild()
 
