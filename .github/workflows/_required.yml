@@ -127,16 +127,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11  # v0.9.6
+        with:
+          pixi-version: v0.67.2
+          cache: true
+      - name: Run bats integration tests
+        run: pixi run test-scripts
+      - name: Run pytest workflow tests
+        run: pixi run test-workflows
 
-      - name: Verify configs/pipelines directory was deleted
-        run: |
-          if [ ! -d configs/pipelines ]; then
-            echo "✓ configs/pipelines removed (closed #1)"
-            exit 0
-          else
-            echo "✗ configs/pipelines still exists"
-            exit 1
-          fi
+  dispatch-contract-test:
+    name: dispatch-contract-test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11  # v0.9.6
+        with:
+          pixi-version: v0.67.2
+          cache: true
+      - name: Run dispatch-apply bats suite (replaces tests/dispatch-apply.test.sh)
+        run: pixi run test-scripts
 
   security-dependency-scan:
     name: security/dependency-scan
