@@ -114,18 +114,14 @@ jobs:
       - name: Install pyyaml
         run: pip install pyyaml
 
-      - name: Validate all pipeline YAML configs parse
+      - name: Validate all workflow YAML files parse
         run: |
           python -c "
           import yaml, glob
-          files = (
-            glob.glob('**/*.yaml', recursive=True) +
-            glob.glob('**/*.yml', recursive=True)
-          )
-          files = [f for f in files if '.github' not in f]
+          files = glob.glob('.github/workflows/**/*.yaml', recursive=True) + glob.glob('.github/workflows/**/*.yml', recursive=True)
           for f in files:
             yaml.safe_load(open(f))
-          print(f'Parsed {len(files)} YAML file(s) successfully')
+          print(f'Parsed {len(files)} workflow YAML file(s) successfully')
           "
 
   integration-tests:
@@ -135,19 +131,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      - name: Install pyyaml
-        run: pip install pyyaml
-
-      - name: Validate pipeline configs reference real workflow names
+      - name: Verify configs/pipelines directory was deleted
         run: |
-          python -c "
-          import yaml, glob, os
-          configs = [
-            yaml.safe_load(open(f))
-            for f in glob.glob('configs/pipelines/**/*.yaml', recursive=True)
-          ]
-          print(f'Validated {len(configs)} pipeline config(s)')
-          " && exit 0
+          if [ ! -d configs/pipelines ]; then
+            echo "✓ configs/pipelines removed (closed #1)"
+            exit 0
+          else
+            echo "✗ configs/pipelines still exists"
+            exit 1
+          fi
 
   security-dependency-scan:
     name: security/dependency-scan

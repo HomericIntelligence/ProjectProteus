@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "project-proteus"
 version = "0.1.0"
 description = "CI/CD pipeline automation hub for HomericIntelligence"
@@ -20,4 +20,3 @@ build   = "just build {NAME}"
 test    = "just test {NAME}"
 promote = "just promote {SRC} {DEST}"
 lint    = "just lint"
-validate = "just validate"

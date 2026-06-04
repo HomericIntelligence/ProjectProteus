@@ -10,7 +10,7 @@ ProjectProteus is the CI/CD pipeline automation hub for the HomericIntelligence 
 
 ## Key Principles
 
-- Pipelines are code: all logic lives in `dagger/src/index.ts`, not in sprawling shell scripts.
+- Pipelines are code: all logic lives in `dagger/src/index.ts`, not in sprawling shell scripts. The placeholder `configs/pipelines/` YAML was removed in #1 — no production code consumed it.
 - Cross-repo coordination uses GitHub's `repository_dispatch` API — no polling.
 - Image promotion (staging → production) is explicit and auditable via `scripts/promote-image.sh`.
 - Environment management uses pixi; task running uses justfile. Never use Makefiles.
@@ -29,9 +29,6 @@ ProjectProteus/
 │   ├── promote-image.sh    # skopeo copy wrapper
 │   ├── dispatch-apply.sh   # GitHub API repository_dispatch sender
 │   └── check-symlinks.sh   # verify all repo symlinks resolve (run in CI symlink-check job)
-├── configs/
-│   └── pipelines/
-│       └── achaean-fleet.yaml  # Pipeline config for AchaeanFleet
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml                   # Validate on push/PR
@@ -85,9 +82,6 @@ before assuming the defect is unfixed.
 - **Build/promote tag arithmetic broken.** The build and promote scripts
   produce incorrect tags in edge cases (multi-arch, no-tag input). See
   #2, #83.
-- **Pipeline YAML configs are not consumed.** `configs/pipelines/*.yaml`
-  is parsed only by `just validate`; no production code reads it.
-  See #1, #82.
 - **CI unit/integration "jobs" are YAML parsers, not tests.** Until #88
   / #89 / #5 land, do not rely on the green CI badge as evidence of
   Dagger function correctness.
@@ -104,7 +98,6 @@ relevant issue from any PR that touches the affected code.
 ## Development Guidelines
 
 - All Dagger functions must be tested locally with `dagger call` before committing.
-- Pipeline configs in `configs/pipelines/` must be valid YAML; `just validate` checks them.
 - Scripts in `scripts/` must be executable and pass `shellcheck`.
 - Keep the Dagger module typed — no `any` in TypeScript.
 - Use `set -euo pipefail` in all bash scripts.
@@ -132,9 +125,6 @@ just pipeline myapp
 
 # Lint check via Dagger
 just lint
-
-# Validate pipeline configs
-just validate
 
 # Enter pixi environment
 pixi shell

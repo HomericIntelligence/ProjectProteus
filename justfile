@@ -65,28 +65,5 @@ bootstrap:
 lint:
     dagger call lint --source .
 
-# Run lint + validate together
-check: lint validate
-
-# Validate all pipeline configs in configs/pipelines/
-validate:
-	#!/usr/bin/env bash
-	set -euo pipefail
-	echo "Validating pipeline configs..."
-	shopt -s nullglob
-	files=(configs/pipelines/*.yaml)
-	if [ ${#files[@]} -eq 0 ]; then
-	    echo "  No pipeline configs found."
-	    exit 0
-	fi
-	errors=0
-	for f in "${files[@]}"; do
-	    if pixi run python -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null; then
-	        echo "  OK: $f"
-	    else
-	        echo "  FAIL: $f"
-	        errors=$((errors + 1))
-	    fi
-	done
-	echo "All pipeline configs valid."
-	exit $errors
+# Run lint
+check: lint
