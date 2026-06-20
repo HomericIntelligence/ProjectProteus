@@ -88,9 +88,10 @@ before assuming the defect is unfixed.
 - **Pipeline YAML configs are not consumed.** `configs/pipelines/*.yaml`
   is parsed only by `just validate`; no production code reads it.
   See #1, #82.
-- **CI unit/integration "jobs" are YAML parsers, not tests.** Until #88
-  / #89 / #5 land, do not rely on the green CI badge as evidence of
-  Dagger function correctness.
+- **CI unit/integration jobs run real tests (resolved by #5).** The
+  `unit-tests` job runs Jest against `dagger/src/`; `integration-tests`
+  runs bats against `scripts/`. The CI badge is now load-bearing.
+  E2E coverage is opt-in via the `e2e` label or push-to-main.
 - **GitHub Actions security gaps.** Gitleaks runs with
   `continue-on-error` (#86); Trivy runs with `exit-code: 0` (#85).
   Treat absence of a failure as inconclusive.
