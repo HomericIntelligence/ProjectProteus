@@ -87,7 +87,11 @@ test-all:
 	    echo "--- $t ---"
 	    bash "$t" || failed=1
 	done
-	just validate || failed=1
+	if command -v pixi >/dev/null 2>&1; then
+	    just validate || failed=1
+	else
+	    echo "WARNING: pixi not on PATH — skipping config validation (install pixi to enable)"
+	fi
 	if [ "$failed" -ne 0 ]; then
 	    echo "FAILED: one or more test suites failed" >&2
 	    exit 1
