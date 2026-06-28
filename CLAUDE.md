@@ -84,9 +84,13 @@ before assuming the defect is unfixed.
   with `::error::` if it is absent (#84). Upstream alignment so
   AchaeanFleet actually emits `host` is tracked in #15; this entry stays
   until that lands. Canonical schema: `docs/dispatch-contract.md`.
-- **Build/promote tag arithmetic broken.** The build and promote scripts
-  produce incorrect tags in edge cases (multi-arch, no-tag input). See
-  #2, #83.
+- **Build/promote tag arithmetic — FIXED.** `dagger call build --publish`
+  now pushes to `${registry}/${name}:${tag}-staging` (via the
+  `stagingRef` helper in `dagger/src/tag.ts`). `scripts/promote-image.sh`
+  copies that staging ref to `${registry}/${name}:${tag}` as a separate
+  step. `just build` remains non-publishing by default (see #91); use
+  `just publish NAME` to push, or `just pipeline NAME` for the full
+  build→test→promote→dispatch flow.
 - **Pipeline YAML configs are not consumed.** `configs/pipelines/*.yaml`
   is parsed only by `just validate`; no production code reads it.
   See #1, #82.

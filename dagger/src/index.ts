@@ -1,10 +1,18 @@
 import { dag, Container, Directory, object, func } from "@dagger.io/dagger"
+import { stagingRef } from "./tag"
 
 @object()
 export class Proteus {
   /**
    * Build an OCI image from a Dockerfile in the given context directory.
-   * Returns the image digest.
+   * Returns the image digest (or the published staging ref when `publish=true`).
+   *
+   * Tagging contract (fixes #2 / #83): when `publish=true`, the image is pushed
+   * to `${registry}/${name}:${tag}-staging`. `scripts/promote-image.sh` then
+   * copies that staging ref to `${registry}/${name}:${tag}` as a separate step.
+   * This matches the staging→production flow documented in CLAUDE.md and
+   * encoded by `just pipeline`.
+   *
    * @param publish - Whether to push the image to the registry (default: false; opt-in to avoid surprising local pushes — see #91)
    */
   @func()
@@ -15,7 +23,7 @@ export class Proteus {
     registry: string = "ghcr.io/homeric-intelligence",
     publish: boolean = false
   ): Promise<string> {
-    const ref = `${registry}/${name}:${tag}`
+    const ref = stagingRef(registry, name, tag)
     const image = context
       .dockerBuild()
 
