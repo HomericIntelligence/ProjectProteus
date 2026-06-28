@@ -49,6 +49,8 @@ grep -q "host is required" "$err_file" \
 wf="$REPO_ROOT/.github/workflows/_required.yml"
 # Extract just the integration-tests job block: from its 'integration-tests:'
 # key (2-space indent) up to the next 2-space-indented job key.
+# NOTE: awk assumes 2-space job-key indentation; this is enforced by yamllint,
+# so changes to _required.yml indentation will be caught automatically.
 job_block="$(awk '
   /^  integration-tests:/ {grab=1; print; next}
   grab && /^  [A-Za-z0-9_-]+:/ {exit}
