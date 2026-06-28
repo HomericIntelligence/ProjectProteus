@@ -98,3 +98,14 @@ validate:
 	done
 	echo "All pipeline configs valid."
 	exit $errors
+
+# Run the unit test suite (pytest + plain-bash shell tests) — used by CI unit-tests job
+test-suite:
+    pixi run pytest tests/unit -v
+    bash tests/dispatch-apply.test.sh
+    bash tests/unit/promote-image.test.sh
+    bash tests/unit/check-symlinks.test.sh
+
+# Run the Dagger integration test suite — used by CI integration-tests job
+test-integration:
+    bash tests/integration/test_dagger_functions.sh

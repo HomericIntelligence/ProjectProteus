@@ -94,9 +94,12 @@ before assuming the defect is unfixed.
 - **Pipeline YAML configs are not consumed.** `configs/pipelines/*.yaml`
   is parsed only by `just validate`; no production code reads it.
   See #1, #82.
-- **CI unit/integration "jobs" are YAML parsers, not tests.** Until #88
-  / #89 / #5 land, do not rely on the green CI badge as evidence of
-  Dagger function correctness.
+- **CI unit/integration "jobs" are YAML parsers, not tests.** Partially
+  resolved by #89: `unit-tests` now runs pytest against pipeline config
+  semantics plus plain-bash tests for `dispatch-apply.sh`, `promote-image.sh`,
+  and `check-symlinks.sh`; `integration-tests` invokes real `dagger call`
+  commands (`test`, `lint-shellcheck`). Issues #88 and #5 remain open
+  for broader Dagger-function coverage.
 - **GitHub Actions security gaps.** Gitleaks runs with `--exit-code 0` (#86);
   treat absence of a Gitleaks failure as inconclusive. (Trivy gate restored — #85 closed.)
 - **Branch protection partial.** PRs require zero reviews (#95); no

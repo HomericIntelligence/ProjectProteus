@@ -14,6 +14,7 @@ python = ">=3.11"
 
 [pypi-dependencies]
 pyyaml = ">=6.0"
+pytest = ">=7.0"
 
 [tasks]
 build   = "just build {NAME}"
@@ -21,3 +22,5 @@ test    = "just test {NAME}"
 promote = "just promote {SRC} {DEST}"
 lint    = "just lint"
 validate = "just validate"
+test-unit = "pytest tests/unit -v"
+test-integration = "bash tests/integration/test_dagger_functions.sh"

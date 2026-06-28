@@ -104,8 +104,8 @@ jobs:
           fi
           echo 'OK: no "continue-on-error: true" found'
 
-  unit-tests:
-    name: unit-tests
+  validate-yaml-syntax:
+    name: validate-yaml-syntax
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -114,7 +114,7 @@ jobs:
       - name: Install pyyaml
         run: pip install pyyaml
 
-      - name: Validate all pipeline YAML configs parse
+      - name: Parse all non-workflow YAML files (syntax-only)
         run: |
           python -c "
           import yaml, glob
@@ -128,26 +128,49 @@ jobs:
           print(f'Parsed {len(files)} YAML file(s) successfully')
           "
 
-  integration-tests:
-    name: integration-tests
+  unit-tests:
+    name: unit-tests
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
 
-      - name: Install pyyaml
-        run: pip install pyyaml
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11  # v0.9.6
+        with:
+          pixi-version: v0.67.2
+          cache: true
 
-      - name: Validate pipeline configs reference real workflow names
+      - name: pixi install (locked)
+        run: pixi install --locked
+
+      - name: Run pytest unit tests (pipeline config semantics)
+        run: pixi run pytest tests/unit -v
+
+      - name: Run shell-script unit tests
         run: |
-          python -c "
-          import yaml, glob, os
-          configs = [
-            yaml.safe_load(open(f))
-            for f in glob.glob('configs/pipelines/**/*.yaml', recursive=True)
-          ]
-          print(f'Validated {len(configs)} pipeline config(s)')
-          " && exit 0
+          set -euo pipefail
+          bash tests/dispatch-apply.test.sh
+          bash tests/unit/promote-image.test.sh
+          bash tests/unit/check-symlinks.test.sh
+
+  integration-tests:
+    name: integration-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+
+      - name: Install Dagger CLI
+        run: |
+          set -euo pipefail
+          curl -fsSL https://dl.dagger.io/dagger/install.sh \
+            | BIN_DIR=/usr/local/bin sudo -E sh
+          dagger version
+
+      - name: Run Dagger integration tests
+        run: bash tests/integration/test_dagger_functions.sh
 
   dispatch-contract-test:
     name: dispatch-contract-test
