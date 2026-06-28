@@ -248,6 +248,14 @@ This data is used solely for CI/CD automation, code quality enforcement, and aud
 
 If you have questions about data handling, contact <security@homericintelligence.com>.
 
+## Releases
+
+We do not maintain a `CHANGELOG.md`. Release notes are generated from
+Conventional Commit messages by `.github/workflows/release.yml` when a
+`vX.Y.Z` tag is pushed. See [docs/releases.md](docs/releases.md) for the
+full policy. Keep commit subjects in the `feat:` / `fix:` / `docs:` /
+`test:` / `chore:` format so the generated notes stay readable.
+
 ---
 
 Thank you for contributing to ProjectProteus!

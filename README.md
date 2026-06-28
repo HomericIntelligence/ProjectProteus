@@ -46,6 +46,13 @@ just pipeline IMAGE_NAME
 just dispatch-apply hermes
 ```
 
+## Releases
+
+Release notes are auto-generated from commits and published on GitHub:
+https://github.com/HomericIntelligence/ProjectProteus/releases
+
+See [docs/releases.md](docs/releases.md) for the versioning and release-cutting policy.
+
 ## Integration Points
 
 | Repo | Role |
