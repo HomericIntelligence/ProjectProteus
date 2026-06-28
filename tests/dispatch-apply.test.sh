@@ -33,6 +33,8 @@ echo "$out" | grep -q "for host: multihost-b" \
   || { echo "FAIL case2: expected 'for host: multihost-b' in output"; echo "$out"; exit 1; }
 
 # Case 3: NO host (neither arg nor env) — must FAIL CLOSED with nonzero exit.
+# Capture stderr in the temp dir (cleaned by the EXIT trap) — never write a
+# stray err.txt to the repo root.
 unset HOST
 err_file="$SHIM_DIR/case3.err"
 if "$REPO_ROOT/scripts/dispatch-apply.sh" 2>"$err_file"; then
