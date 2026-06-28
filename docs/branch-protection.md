@@ -22,7 +22,7 @@ provisioning. Branch protection is the last guardrail.
 | Require pull request before merging | **on** | — |
 | Required approving review count | **1** (minimum) | #95 |
 | Dismiss stale approvals on new commits | **on** | — |
-| Require review from code owners | **on** | #102 |
+| Require review from code owners | **on** | #102 (applied via scripts/branch-protection-apply.sh) |
 | Require status checks to pass | **on** | — |
 | Required status checks | see below | #94 |
 | Require branches to be up to date before merging | **on** | — |
@@ -58,11 +58,25 @@ in one pass without re-deriving it.
 
 ## Procedure to apply
 
-1. Open repository Settings → Branches → Branch protection rules.
-2. Add or edit the rule for `main` to match the table above.
-3. Verify by issuing a no-op PR from a fork; it must require a review
-   and a green status check before the **Merge** button enables.
-4. Mark #41 / #95 / #102 / #94 closed as appropriate.
+The repo-level apply is scripted and idempotent:
+
+1. `gh auth status` — confirm authentication has admin scope on the repo.
+2. `just branch-protection-dry-run` — prints the merged payload **without
+   PUT-ing it**. Review that `required_status_checks.contexts` lists the
+   expected checks from #94, `required_approving_review_count` matches #95,
+   and `restrictions` (if non-null) lists the expected users/teams/apps.
+3. `just branch-protection-apply` — performs read-modify-write: every sibling
+   field on `branches/main/protection` is round-tripped verbatim; only
+   `require_code_owner_reviews` is mutated to `true`. Safe to re-run.
+4. Verify:
+   `gh api repos/HomericIntelligence/ProjectProteus/branches/main/protection --jq '.required_pull_request_reviews.require_code_owner_reviews'`
+   prints `true`.
+5. Close #102 once step 4 returns `true`.
+
+The script uses `gh api -i` to parse HTTP status lines from stdout (a stable
+contract across `gh` versions), so 404 (no existing protection) is handled by
+creating minimal protection, while 401/403 (insufficient scope) fail fast with
+an explicit error.
 
 ## See also
 
