@@ -1,0 +1,23 @@
+{
+  "required_status_checks": {"strict": true, "contexts": ["lint-scripts", "typecheck"]},
+  "enforce_admins": {"enabled": true, "url": "https://api.github.com/x"},
+  "required_pull_request_reviews": {
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": false,
+    "required_approving_review_count": 2,
+    "require_last_push_approval": false,
+    "url": "https://api.github.com/x"
+  },
+  "restrictions": {
+    "users": [{"login": "alice", "id": 1}],
+    "teams": [{"slug": "core", "id": 2}],
+    "apps":  [{"slug": "actions", "id": 3}]
+  },
+  "required_linear_history": {"enabled": false},
+  "allow_force_pushes": {"enabled": false},
+  "allow_deletions": {"enabled": false},
+  "block_creations": {"enabled": false},
+  "required_conversation_resolution": {"enabled": true},
+  "lock_branch": {"enabled": false},
+  "allow_fork_syncing": {"enabled": false}
+}

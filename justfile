@@ -54,6 +54,18 @@ dispatch-apply HOST:
     GITHUB_TOKEN={{GITHUB_TOKEN}} MYRMIDONS_REPO={{MYRMIDONS_REPO}} ./scripts/dispatch-apply.sh {{HOST}}
 
 # ===========================
+# Branch Protection
+# ===========================
+
+# Apply branch protection to enforce CODEOWNERS reviews on main (#102)
+branch-protection-apply:
+    ./scripts/branch-protection-apply.sh
+
+# Print the protection payload that would be applied, without calling PUT (#102)
+branch-protection-dry-run:
+    DRY_RUN=1 ./scripts/branch-protection-apply.sh
+
+# ===========================
 # Setup
 # ===========================
 

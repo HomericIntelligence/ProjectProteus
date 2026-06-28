@@ -11,6 +11,7 @@
 # Deployment scripts — high blast radius
 /scripts/dispatch-apply.sh      @HomericIntelligence/maintainers
 /scripts/promote-image.sh       @HomericIntelligence/maintainers
+/scripts/branch-protection-apply.sh  @HomericIntelligence/maintainers
 
 # CI/CD workflows
 /.github/workflows/             @HomericIntelligence/maintainers
