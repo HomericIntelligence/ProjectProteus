@@ -20,16 +20,20 @@ default:
 # Core Pipeline
 # ===========================
 
-# Build an OCI image using Dagger
+# Build an OCI image using Dagger (local only — does NOT push; use `just publish` to publish)
 build NAME:
     dagger call build --context . --name {{NAME}} --tag {{IMAGE_TAG}} --registry {{REGISTRY}}
+
+# Build and publish an OCI image to REGISTRY/NAME:IMAGE_TAG-staging
+publish NAME:
+    dagger call build --context . --name {{NAME}} --tag {{IMAGE_TAG}} --registry {{REGISTRY}} --publish
 
 # Run tests for a given repo using Dagger
 test NAME:
     dagger call test --source . --command "just test {{NAME}}"
 
-# Full pipeline: build → test → promote → dispatch
-pipeline NAME HOST="hermes": (build NAME) (test NAME)
+# Full pipeline: publish (→ :TAG-staging) → test → promote (:TAG-staging → :TAG) → dispatch
+pipeline NAME HOST="hermes": (publish NAME) (test NAME)
     just promote {{REGISTRY}}/{{NAME}}:{{IMAGE_TAG}}-staging {{REGISTRY}}/{{NAME}}:{{IMAGE_TAG}}
     just dispatch-apply {{HOST}}
 

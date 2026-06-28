@@ -57,3 +57,9 @@ jobs:
 
       - name: TypeScript type check
         run: cd dagger && npx tsc --noEmit
+
+      - name: Set up just
+        uses: extractions/setup-just@v2
+
+      - name: Dagger unit + integration tests (tag arithmetic)
+        run: cd dagger && npm test
