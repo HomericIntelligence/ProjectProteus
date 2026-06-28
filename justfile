@@ -73,8 +73,12 @@ lint:
 lint-verify-92:
     bash scripts/verify-issue-92-invariants.sh
 
+# Verify remediation-plan checkboxes match expected issue state (#183)
+test-plan-sync:
+	bash tests/remediation-plan-sync.test.sh
+
 # Run lint + validate together
-check: lint validate
+check: lint validate test-plan-sync
 
 # Validate all pipeline configs in configs/pipelines/
 validate:
