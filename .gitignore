@@ -19,6 +19,9 @@ dagger/dist/
 __pycache__/
 *.pyc
 *.pyo
+*.egg-info/
+proteus.egg-info/
+.pytest_cache/
 
 # Dagger
 .dagger/

@@ -1,2 +1,0 @@
-[console_scripts]
-proteus = proteus.__main__:main
