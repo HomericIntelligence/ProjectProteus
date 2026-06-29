@@ -1,0 +1,12 @@
+name: broken
+description: Stage depends on nonexistent stage
+triggers:
+  - event: test
+    repo: test/repo
+stages:
+  - name: build
+    type: dagger
+    function: build
+    args:
+      context: "."
+    depends_on: [nonexistent]

@@ -111,22 +111,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
 
-      - name: Install pyyaml
-        run: pip install pyyaml
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11  # v0.9.6
+        with:
+          pixi-version: v0.67.2
+          cache: true
 
-      - name: Validate all pipeline YAML configs parse
-        run: |
-          python -c "
-          import yaml, glob
-          files = (
-            glob.glob('**/*.yaml', recursive=True) +
-            glob.glob('**/*.yml', recursive=True)
-          )
-          files = [f for f in files if '.github' not in f]
-          for f in files:
-            yaml.safe_load(open(f))
-          print(f'Parsed {len(files)} YAML file(s) successfully')
-          "
+      - name: Bootstrap proteus
+        run: pixi run bootstrap-proteus
+
+      - name: Run pytest
+        run: pixi run pytest tests/unit -v
 
       - name: Install jq
         run: sudo apt-get install -y jq
@@ -141,19 +136,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
 
-      - name: Install pyyaml
-        run: pip install pyyaml
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11  # v0.9.6
+        with:
+          pixi-version: v0.67.2
+          cache: true
 
-      - name: Validate pipeline configs reference real workflow names
+      - name: Bootstrap proteus
+        run: pixi run bootstrap-proteus
+
+      - name: Schema-in-sync check
+        run: pixi run pytest tests/unit/test_schema_in_sync.py -v
+
+      - name: Pipeline-config dry-run (drift guard)
         run: |
-          python -c "
-          import yaml, glob, os
-          configs = [
-            yaml.safe_load(open(f))
-            for f in glob.glob('configs/pipelines/**/*.yaml', recursive=True)
-          ]
-          print(f'Validated {len(configs)} pipeline config(s)')
-          " && exit 0
+          for f in configs/pipelines/*.yaml; do
+            svc=$(basename "$f" .yaml)
+            pixi run python -m proteus run "$f" --service "$svc" --dry-run
+          done
 
       - name: Test dispatch-apply host validation (fail-closed contract)
         run: bash tests/dispatch-apply.test.sh

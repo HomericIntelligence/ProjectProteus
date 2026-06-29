@@ -1,0 +1,10 @@
+name: broken
+description: Dagger stage without function field
+triggers:
+  - event: test
+    repo: test/repo
+stages:
+  - name: build
+    type: dagger
+    args:
+      context: "."

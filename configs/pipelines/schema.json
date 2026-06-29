@@ -1,0 +1,228 @@
+{
+  "$defs": {
+    "DaggerStage": {
+      "properties": {
+        "args": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Args",
+          "type": "object"
+        },
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "function": {
+          "title": "Function",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "const": "dagger",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "function"
+      ],
+      "title": "DaggerStage",
+      "type": "object"
+    },
+    "NotificationChannel": {
+      "properties": {
+        "channel": {
+          "title": "Channel",
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel"
+      ],
+      "title": "NotificationChannel",
+      "type": "object"
+    },
+    "Notifications": {
+      "properties": {
+        "on_failure": {
+          "items": {
+            "$ref": "#/$defs/NotificationChannel"
+          },
+          "title": "On Failure",
+          "type": "array"
+        },
+        "on_success": {
+          "items": {
+            "$ref": "#/$defs/NotificationChannel"
+          },
+          "title": "On Success",
+          "type": "array"
+        }
+      },
+      "title": "Notifications",
+      "type": "object"
+    },
+    "Registry": {
+      "properties": {
+        "base": {
+          "title": "Base",
+          "type": "string"
+        },
+        "staging_suffix": {
+          "default": "-staging",
+          "title": "Staging Suffix",
+          "type": "string"
+        }
+      },
+      "required": [
+        "base"
+      ],
+      "title": "Registry",
+      "type": "object"
+    },
+    "ScriptStage": {
+      "properties": {
+        "args": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Args",
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "script": {
+          "title": "Script",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "skopeo",
+            "dispatch"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "script"
+      ],
+      "title": "ScriptStage",
+      "type": "object"
+    },
+    "Trigger": {
+      "properties": {
+        "event": {
+          "title": "Event",
+          "type": "string"
+        },
+        "repo": {
+          "title": "Repo",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event",
+        "repo"
+      ],
+      "title": "Trigger",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "notifications": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Notifications"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "registry": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Registry"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "stages": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "dagger": "#/$defs/DaggerStage",
+            "dispatch": "#/$defs/ScriptStage",
+            "skopeo": "#/$defs/ScriptStage"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/DaggerStage"
+          },
+          {
+            "$ref": "#/$defs/ScriptStage"
+          }
+        ]
+      },
+      "title": "Stages",
+      "type": "array"
+    },
+    "triggers": {
+      "items": {
+        "$ref": "#/$defs/Trigger"
+      },
+      "title": "Triggers",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "triggers",
+    "stages"
+  ],
+  "title": "Pipeline",
+  "type": "object"
+}

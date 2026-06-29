@@ -15,11 +15,15 @@ jq = ">=1.7"
 
 [pypi-dependencies]
 pyyaml = ">=6.0"
+pydantic = ">=2.6"
+pytest = ">=8"
 
 [tasks]
-build   = "just build {NAME}"
-test    = "just test {NAME}"
-promote = "just promote {SRC} {DEST}"
-lint    = "just lint"
+build    = "just build {NAME}"
+test     = "just test {NAME}"
+promote  = "just promote {SRC} {DEST}"
+lint     = "just lint"
+bootstrap-proteus = "pip install -e ."
 validate = "just validate"
+pipeline = { cmd = "python -m proteus run configs/pipelines/{NAME}.yaml --service {NAME}", depends_on = ["bootstrap-proteus"] }
 test-branch-protection = "bash tests/branch-protection.test.sh"

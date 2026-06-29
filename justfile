@@ -32,10 +32,12 @@ publish NAME:
 test NAME:
     dagger call test --source . --command "just test {{NAME}}"
 
-# Full pipeline: publish (→ :TAG-staging) → test → promote (:TAG-staging → :TAG) → dispatch
-pipeline NAME HOST="hermes": (publish NAME) (test NAME)
-    just promote {{REGISTRY}}/{{NAME}}:{{IMAGE_TAG}}-staging {{REGISTRY}}/{{NAME}}:{{IMAGE_TAG}}
-    just dispatch-apply {{HOST}}
+# Full pipeline driven by configs/pipelines/<NAME>.yaml
+# (build → test → promote staging→latest → dispatch, per the config's stages)
+pipeline NAME HOST="hermes":
+    pixi run bootstrap-proteus
+    pixi run python -m proteus run configs/pipelines/{{NAME}}.yaml \
+        --service {{NAME}} --host {{HOST}}
 
 # ===========================
 # Promotion
@@ -126,28 +128,10 @@ test-all:
 	fi
 	echo "PASSED: all test suites passed"
 
-# Validate all pipeline configs in configs/pipelines/
+# Schema-validate all pipeline configs in configs/pipelines/
 validate:
-	#!/usr/bin/env bash
-	set -euo pipefail
-	echo "Validating pipeline configs..."
-	shopt -s nullglob
-	files=(configs/pipelines/*.yaml)
-	if [ ${#files[@]} -eq 0 ]; then
-	    echo "  No pipeline configs found."
-	    exit 0
-	fi
-	errors=0
-	for f in "${files[@]}"; do
-	    if pixi run python -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null; then
-	        echo "  OK: $f"
-	    else
-	        echo "  FAIL: $f"
-	        errors=$((errors + 1))
-	    fi
-	done
-	echo "All pipeline configs valid."
-	exit $errors
+    pixi run bootstrap-proteus
+    pixi run python -m proteus validate configs/pipelines/
 
 # Verify version is consistent across pixi.toml, dagger/package.json, CHANGELOG.md
 version:

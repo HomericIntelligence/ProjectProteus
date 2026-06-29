@@ -93,9 +93,10 @@ before assuming the defect is unfixed.
   step. `just build` remains non-publishing by default (see #91); use
   `just publish NAME` to push, or `just pipeline NAME` for the full
   build→test→promote→dispatch flow.
-- **Pipeline YAML configs are not consumed.** `configs/pipelines/*.yaml`
-  is parsed only by `just validate`; no production code reads it.
-  See #1, #82.
+- ~~**Pipeline YAML configs are not consumed.**~~ Resolved in #82 — configs
+  drive `just pipeline <NAME>` via `proteus run`, and `just validate`
+  schema-validates them via `proteus validate`. See `KNOWN_LIMITATIONS.md`
+  for the `notifications` follow-up. (Refs #1, #82.)
 - **CI unit/integration "jobs" are YAML parsers, not tests.** On `main`
   the `unit-tests` / `integration-tests` jobs in
   `.github/workflows/_required.yml` still only YAML-parse pipeline

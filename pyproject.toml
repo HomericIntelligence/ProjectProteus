@@ -1,0 +1,15 @@
+[project]
+name = "proteus"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.6", "pyyaml>=6.0"]
+
+[project.scripts]
+proteus = "proteus.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["proteus*"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
