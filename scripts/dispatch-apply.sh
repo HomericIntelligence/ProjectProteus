@@ -7,7 +7,7 @@
 # If neither is set, the script FAILS CLOSED (exits 1) — see docs/dispatch-contract.md (#84).
 #
 # Optional metadata env vars (forwarded into client_payload when non-empty):
-#   IMAGE_NAME, IMAGE_TAG, IMAGE_DIGEST, SOURCE_REPO
+#   IMAGE_NAME, IMAGE_TAG, IMAGE_DIGEST, SOURCE_REPO (alias: SOURCE)
 # `image_tag` and `source` are forwarded as audit context — empty when absent (#15).
 # Payload is built with `jq` so any character (quotes, newlines, backslashes)
 # is encoded safely.
@@ -49,7 +49,7 @@ PAYLOAD=$(jq -n \
   --arg image_name   "${IMAGE_NAME:-}" \
   --arg image_tag    "${IMAGE_TAG:-}" \
   --arg image_digest "${IMAGE_DIGEST:-}" \
-  --arg source_repo  "${SOURCE_REPO:-}" \
+  --arg source_repo  "${SOURCE_REPO:-${SOURCE:-}}" \
   '{
      event_type: "agamemnon-apply",
      client_payload: (

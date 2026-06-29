@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Helper and test-case functions are dispatched indirectly (via `$test_fn` in
 # run_test and through PATH-shimmed curl), so ShellCheck cannot see the call
-# sites and reports their bodies as unreachable (SC2317). Each test also
-# deliberately exports its env inside a `( ... )` subshell so the variables are
-# scoped to that single dispatch-apply.sh invocation — SC2030/SC2031 flag this
-# intentional isolation. Disable all three file-wide.
-# shellcheck disable=SC2317,SC2030,SC2031
+# sites and reports their bodies as unreachable (SC2317) and the functions as
+# never invoked (SC2329). Each test also deliberately exports its env inside a
+# `( ... )` subshell so the variables are scoped to that single
+# dispatch-apply.sh invocation — SC2030/SC2031 flag this intentional isolation.
+# Disable these false-positives file-wide.
+# shellcheck disable=SC2317,SC2329,SC2030,SC2031
 #
 # test-dispatch-apply.sh — Unit tests for scripts/dispatch-apply.sh
 # Tests the dispatch-apply script with stubbed curl, verifying:
@@ -204,7 +205,7 @@ test_missing_token() {
 
     local exit_code=0
     (
-        unset GITHUB_TOKEN || true
+        unset GITHUB_TOKEN
         export HOST="hermes"
         export STUB_HTTP_CODE="204"
         export STUB_RESPONSE_BODY=""
@@ -233,7 +234,7 @@ test_missing_host() {
     local exit_code=0
     (
         export GITHUB_TOKEN="test-token"
-        unset HOST || true
+        unset HOST
         export STUB_HTTP_CODE="204"
         export STUB_RESPONSE_BODY=""
         export PATH="$stub_dir:$PATH"
@@ -264,13 +265,13 @@ test_special_characters() {
     local exit_code=0
     (
         export GITHUB_TOKEN="test-token"
-        export HOST="h"
+        export HOST="hermes"
         export IMAGE_TAG="$image_tag"
         export SOURCE="$source"
         export STUB_HTTP_CODE="204"
         export STUB_RESPONSE_BODY=""
         export PATH="$stub_dir:$PATH"
-        bash ./scripts/dispatch-apply.sh h
+        bash ./scripts/dispatch-apply.sh hermes
     ) || exit_code=$?
 
     if ! assert_exit_code 0 "$exit_code"; then return 1; fi
