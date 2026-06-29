@@ -155,8 +155,12 @@ jobs:
           print(f'Validated {len(configs)} pipeline config(s)')
           " && exit 0
 
+      - name: Assert jq present (required by dispatch-apply DLQ)
+        run: command -v jq && jq --version
       - name: Test dispatch-apply host validation (fail-closed contract)
         run: bash tests/dispatch-apply.test.sh
+      - name: Run dispatch-apply retry/DLQ tests
+        run: bash tests/dispatch-apply-retry.test.sh
       - name: Run remediation-plan sync test
         run: bash tests/remediation-plan-sync.test.sh
 
