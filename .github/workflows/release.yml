@@ -2,22 +2,69 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    tags: ["v*"]
 
 permissions:
   contents: write
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    name: Publish GitHub Release
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+
+      - name: Parse and validate tag format (strict semver only)
+        id: ver
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '$tag' is not strict semver vX.Y.Z. Pre-release and build suffixes are not supported."
+            exit 1
+          fi
+          version="${tag#v}"
+          echo "tag=${tag}"        >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag version matches manifests
+        run: |
+          set -euo pipefail
+          want="${{ steps.ver.outputs.version }}"
+          pixi_v=$(grep -E '^version[[:space:]]*=' pixi.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          dagger_v=$(grep -E '"version"[[:space:]]*:' dagger/package.json | head -1 | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+          if [ "$pixi_v" != "$want" ] || [ "$dagger_v" != "$want" ]; then
+            echo "::error::Tag $want does not match manifests (pixi=$pixi_v, dagger=$dagger_v). Bump manifests before tagging."
+            exit 1
+          fi
+          echo "OK: tag $want matches both manifests"
+
+      - name: Verify CHANGELOG has matching section
+        run: bash tests/version-consistency.test.sh
+
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        run: |
+          set -euo pipefail
+          version="${{ steps.ver.outputs.version }}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\] - " { capture=1; next }
+            capture && /^## \[/ { exit }
+            capture && /^\[[^]]*\]: / { exit }
+            capture { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::No CHANGELOG section found for version ${version}"
+            exit 1
+          fi
+          echo "Extracted $(wc -l < release-notes.md) line(s) of release notes"
 
       - name: Create GitHub Release
-        # --verify-tag requires a signed tag (git tag -s / tag.gpgsign=true); unsigned tags fail intentionally — see docs/releases.md.
-        run: gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            --title "ProjectProteus ${{ steps.ver.outputs.tag }}" \
+            --notes-file release-notes.md \
+            --verify-tag
