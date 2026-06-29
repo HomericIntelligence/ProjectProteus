@@ -159,6 +159,8 @@ jobs:
         run: bash tests/dispatch-apply.test.sh
       - name: Run remediation-plan sync test
         run: bash tests/remediation-plan-sync.test.sh
+      - name: Run remediation-plan checkbox regression test
+        run: bash tests/remediation-plan-checkboxes.test.sh
 
   security-dependency-scan:
     name: security/dependency-scan
