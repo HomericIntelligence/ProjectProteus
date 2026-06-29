@@ -4,6 +4,8 @@
 
 CI/CD pipeline automation hub for the HomericIntelligence ecosystem.
 
+> **Version:** see [`CHANGELOG.md`](CHANGELOG.md). Downstream repos should pin to a released tag (e.g. `v0.1.0`); untagged refs are not supported.
+
 ## Purpose
 
 ProjectProteus is the centralized pipeline orchestration layer for all HomericIntelligence services. It provides reusable Dagger modules for building OCI images, running test suites, and promoting images across registries. Cross-repo dispatch patterns ensure that image pushes from AchaeanFleet automatically trigger deployment workflows in Myrmidons.

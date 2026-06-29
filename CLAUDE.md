@@ -115,6 +115,11 @@ before assuming the defect is unfixed.
   `branch-protection-test` required check. (Closes #95. Partially closes
   #102 — `require_code_owner_reviews=true` flips here; the CODEOWNERS
   coverage audit tracked in #102 remains open.)
+- **Releases.** Cut releases by pushing a `v<semver>` tag to `main`; never
+  edit `package.json` / `pixi.toml` versions via a bot commit. The
+  `release.yml` workflow fails closed if the tag does not match both
+  manifests AND a dated `CHANGELOG.md` section. Strict `vX.Y.Z` only —
+  no pre-release or build suffixes. See #101.
 
 Agents must not silently work around these defects; instead, link the
 relevant issue from any PR that touches the affected code.

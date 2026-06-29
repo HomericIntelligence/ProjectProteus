@@ -130,3 +130,12 @@ repos:
         always_run: true
         pass_filenames: false
         stages: [pre-push]
+      - id: version-consistency
+        name: "version consistency across pixi.toml / dagger/package.json / CHANGELOG.md"
+        description: >
+          Regression guard for #101. When any version-bearing file changes,
+          re-run tests/version-consistency.test.sh.
+        language: system
+        entry: bash tests/version-consistency.test.sh
+        files: ^(pixi\.toml|dagger/package\.json|CHANGELOG\.md)$
+        pass_filenames: false

@@ -148,3 +148,7 @@ validate:
 	done
 	echo "All pipeline configs valid."
 	exit $errors
+
+# Verify version is consistent across pixi.toml, dagger/package.json, CHANGELOG.md
+version:
+	bash tests/version-consistency.test.sh
