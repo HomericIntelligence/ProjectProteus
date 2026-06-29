@@ -64,6 +64,47 @@ gh api repos/HomericIntelligence/Myrmidons/dispatches \
 3. If no run was created, the Myrmidons-side workflow trigger is
    misconfigured — escalate to the Myrmidons on-call.
 
+## Step 5 — Re-trigger from dead-letter artifact
+
+When `scripts/dispatch-apply.sh` exhausts its retry budget
+(`DISPATCH_MAX_ATTEMPTS`, default 5), it writes the unsent payload to
+`${GITHUB_WORKSPACE}/.dispatch-dlq/<ts>-<host>.json` and `cross-repo-dispatch.yml`
+uploads that directory as the `dispatch-dlq-<run_id>` artifact (90-day
+retention). `dispatch-failure-alert.yml` then opens (or comments on) a
+per-host tracking issue labelled `cross-repo-dispatch, incident,
+severity:major`.
+
+1. Open the auto-filed issue. Confirm `host` matches the failure you
+   are investigating.
+2. From the failed run page → Artifacts → download
+   `dispatch-dlq-<run_id>.zip`; unzip; inspect:
+   `jq . dispatch-dlq-<run_id>/*.json` shows `host`, `last_code`,
+   `last_body`, and the full original `payload`.
+3. Once the underlying cause is fixed (token rotated per Step 2,
+   Myrmidons recovered per Step 3, etc.), re-trigger by either:
+   - Re-running the failed workflow ("Re-run all jobs") — preserves
+     audit trail end-to-end. Recommended.
+   - Re-emitting the upstream `image-pushed` dispatch from AchaeanFleet
+     with the same payload.
+   - Locally:
+     `MYRMIDONS_DISPATCH_TOKEN=<token> just dispatch-apply <host>`
+     using the `host` from the DLQ JSON. Bypasses the workflow audit
+     trail; use only when the first two options are unavailable.
+4. After a successful retry, close the tracking issue with a comment
+   linking the recovery action (PR, re-run URL, or local shell session).
+
+### Tuning during an incident
+
+If transient failures are widespread (e.g., GitHub API degraded),
+operators can temporarily bump retry budget without editing code by
+setting workflow-level env vars before re-running:
+
+- `DISPATCH_MAX_ATTEMPTS` (default 5)
+- `DISPATCH_BASE_DELAY_MS` (default 1000)
+- `DISPATCH_MAX_DELAY_MS` (default 30000)
+
+Document any temporary bump in the tracking issue.
+
 ## Inbound event missing
 
 If no Proteus `Cross-Repo Dispatch` run exists at all:
@@ -77,13 +118,8 @@ If no Proteus `Cross-Repo Dispatch` run exists at all:
 
 ## Manual recovery
 
-Once the cause is identified, re-run by either:
-
-- Re-running the failed Proteus workflow ("Re-run all jobs"), OR
-- Re-emitting the upstream `image-pushed` dispatch from AchaeanFleet, OR
-- Manually invoking `scripts/dispatch-apply.sh <host>` from a trusted
-  shell with `MYRMIDONS_DISPATCH_TOKEN` exported (this bypasses the
-  audit trail; prefer one of the prior options).
+Once the cause is identified, see Step 5 for the audited recovery procedure
+(download DLQ artifact, then re-run workflow).
 
 ## Post-incident
 

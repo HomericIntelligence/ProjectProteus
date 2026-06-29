@@ -30,14 +30,14 @@ export ALLOWED_HOSTS_FILE="$FIXTURE_ALLOW"
 
 # Case 1: explicit host argument (allowlisted) — exits 0, prints host in output.
 out=$("$REPO_ROOT/scripts/dispatch-apply.sh" multihost-a 2>&1)
-echo "$out" | grep -q "for host: multihost-a" \
-  || { echo "FAIL case1: expected 'for host: multihost-a' in output"; echo "$out"; exit 1; }
+echo "$out" | grep -q "host=multihost-a" \
+  || { echo "FAIL case1: expected 'host=multihost-a' in output"; echo "$out"; exit 1; }
 
 # Case 2: HOST env var set, no argument (allowlisted) — exits 0, prints HOST in output.
 unset HOST
 out=$(env ALLOWED_HOSTS_FILE="$FIXTURE_ALLOW" HOST=multihost-b "$REPO_ROOT/scripts/dispatch-apply.sh" 2>&1)
-echo "$out" | grep -q "for host: multihost-b" \
-  || { echo "FAIL case2: expected 'for host: multihost-b' in output"; echo "$out"; exit 1; }
+echo "$out" | grep -q "host=multihost-b" \
+  || { echo "FAIL case2: expected 'host=multihost-b' in output"; echo "$out"; exit 1; }
 
 # Case 3: NO host (neither arg nor env) — must FAIL CLOSED with nonzero exit (#84).
 # Capture stderr in the temp dir (cleaned by the EXIT trap) — never write a

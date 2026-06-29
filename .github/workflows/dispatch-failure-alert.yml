@@ -1,0 +1,82 @@
+name: Cross-Repo Dispatch Failure Alert
+
+on:
+  workflow_run:
+    workflows: ["Cross-Repo Dispatch"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: dispatch-failure-alert-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  open-incident:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download DLQ artifact (if present)
+        uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11  # v6.0.0
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
+          name_is_regexp: true
+          name: '^dispatch-dlq-.*'
+          path: ./dlq
+          if_no_artifact_found: ignore
+
+      - name: Resolve host from DLQ (or 'unknown')
+        id: resolve
+        run: |
+          set -euo pipefail
+          host="unknown"
+          f=$(ls ./dlq/dispatch-dlq-*/*.json 2>/dev/null | head -n1 || true)
+          if [ -n "$f" ]; then host=$(jq -r '.host // "unknown"' "$f"); fi
+          echo "host=$host" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v8.0.0
+        env:
+          HOST: ${{ steps.resolve.outputs.host }}
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const host = process.env.HOST || 'unknown';
+            const title = `[cross-repo-dispatch] dispatch to ${host} failing`;
+            const body = [
+              `Failing dispatch for host: \`${host}\``,
+              ``,
+              `Run: ${run.html_url}`,
+              `Head SHA: ${run.head_sha}`,
+              `Conclusion: ${run.conclusion}`,
+              ``,
+              `Dead-letter artifact: \`dispatch-dlq-${run.id}\` (download from the run page).`,
+              `Runbook: docs/runbooks/cross-repo-dispatch-failure.md (Step 5).`,
+              ``,
+              `Refs #98, #81`,
+            ].join("\n");
+            const q = `repo:${context.repo.owner}/${context.repo.repo} in:title ` +
+                      `"[cross-repo-dispatch] dispatch to ${host} failing"`;
+            const found = await github.rest.search.issuesAndPullRequests({q, per_page: 5});
+            const match = found.data.items.find(i => i.title === title);
+            if (match) {
+              if (match.state === 'closed') {
+                await github.rest.issues.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: match.number, state: 'open',
+                });
+              }
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number,
+                body: `Repeat failure on host \`${host}\`: ${run.html_url} (sha ${run.head_sha}).`,
+              });
+              return;
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title, body,
+              labels: ["cross-repo-dispatch", "incident", "severity:major"],
+            });

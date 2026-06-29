@@ -120,6 +120,15 @@ before assuming the defect is unfixed.
   `release.yml` workflow fails closed if the tag does not match both
   manifests AND a dated `CHANGELOG.md` section. Strict `vX.Y.Z` only —
   no pre-release or build suffixes. See #101.
+- **Cross-repo dispatch graceful degradation.** `scripts/dispatch-apply.sh`
+  retries 408/429/5xx and curl transport errors with jittered exponential
+  backoff (env-tunable via `DISPATCH_MAX_ATTEMPTS`, `DISPATCH_BASE_DELAY_MS`,
+  `DISPATCH_MAX_DELAY_MS`), persists unsent payloads to
+  `${GITHUB_WORKSPACE}/.dispatch-dlq/`, and the workflow uploads them as
+  `dispatch-dlq-<run_id>` artifacts. `dispatch-failure-alert.yml` opens or
+  comments on a per-host tracking issue labelled `cross-repo-dispatch,
+  incident, severity:major`. See #98 and `docs/dispatch-contract.md`
+  §Retry & Dead-Letter Behaviour.
 
 Agents must not silently work around these defects; instead, link the
 relevant issue from any PR that touches the affected code.

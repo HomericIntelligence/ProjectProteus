@@ -62,6 +62,43 @@ allowlist, ProjectProteus **fails closed**:
 
 **Rationale**: In multi-host deployments, a silent default to any host (e.g., `hermes`) would misroute applies and corrupt cluster state. Failing closed ensures operators must explicitly provide an explicitly-allowlisted `host`; see issues #84 and #97.
 
+## Retry & Dead-Letter Behaviour
+
+`scripts/dispatch-apply.sh` retries the outbound POST under classified
+failure conditions. **Retryable** classes — exponential backoff with
+0.5–1.5× jitter between attempts:
+
+| Class | Codes | Reason |
+|-------|-------|--------|
+| HTTP transient | 408, 429, 500, 502, 503, 504 | Server overload / rate limit |
+| curl transport | 6 (DNS), 7 (connect), 28 (timeout), 35 (SSL connect), 52 (empty reply), 56 (recv) | Network transient |
+
+**Non-retryable** — failure persisted to DLQ immediately, exit 1:
+
+| Codes | Reason |
+|-------|--------|
+| 401, 403 | Token revoked / scope wrong — see runbook Step 2 |
+| 404 | Myrmidons repo renamed — see runbook Step 3 |
+| 422 | Malformed payload — fix upstream emitter |
+
+**Configuration** (env vars, all optional):
+
+| Var | Default | Purpose |
+|-----|---------|---------|
+| `DISPATCH_MAX_ATTEMPTS` | `5` | Total attempts including the first |
+| `DISPATCH_BASE_DELAY_MS` | `1000` | Initial backoff (ms) |
+| `DISPATCH_MAX_DELAY_MS` | `30000` | Cap for a single backoff (ms) |
+| `DISPATCH_DLQ_DIR` | `${GITHUB_WORKSPACE:-$PWD}/.dispatch-dlq` | Where DLQ JSON is written |
+
+**Dead-letter format**: one JSON file per exhausted dispatch,
+`<ts>-<host>.json`, fields: `ts`, `host`, `repo`, `last_code`,
+`payload` (full original outbound JSON), `last_body` (response body
+from last attempt, JSON-encoded by `jq -R -s '.'` so binary/quoted
+bytes are preserved).
+
+See `docs/runbooks/cross-repo-dispatch-failure.md` Step 5 for the
+operator recovery procedure.
+
 ## Local Verification
 
 To verify the inbound contract with a test dispatch:
@@ -81,6 +118,7 @@ gh api repos/HomericIntelligence/ProjectProteus/dispatches \
 
 ## Related Issues & Documents
 
+- **Issue #98**: Graceful degradation in cross-repo dispatch chain (implemented via this PR).
 - **Issue #84**: Fail-closed on absent/empty `host`.
 - **Issue #97**: Payload validation — RFC 1123 format + allowlist enforcement.
 - **Issue #15**: Coordinate AchaeanFleet emitter to ensure `host` is always sent.
@@ -88,5 +126,5 @@ gh api repos/HomericIntelligence/ProjectProteus/dispatches \
 - **`configs/allowed-hosts.txt`**: Audited allowlist of dispatch target hosts.
 - **`scripts/validate-host.sh`**: Shared format + allowlist validator.
 - **`.github/workflows/cross-repo-dispatch.yml`**: Inbound validation and dispatch.
-- **`scripts/dispatch-apply.sh`**: Outbound dispatch to Myrmidons.
+- **`scripts/dispatch-apply.sh`**: Outbound dispatch to Myrmidons with retry logic.
 - **`docs/runbooks/cross-repo-dispatch-failure.md`**: Troubleshooting guide.
