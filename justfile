@@ -89,8 +89,20 @@ lint-verify-92:
 test-plan-sync:
 	bash tests/remediation-plan-sync.test.sh
 
-# Run lint + validate together
-check: lint validate test-plan-sync
+# Apply branch protection ruleset to main (requires admin GITHUB_TOKEN) — Refs #95, #102.
+apply-branch-protection:
+    GITHUB_TOKEN={{GITHUB_TOKEN}} ./scripts/apply-branch-protection.sh
+
+# Verify live branch protection matches .github/branch-protection.main.json — Refs #95.
+verify-branch-protection:
+    GITHUB_TOKEN={{GITHUB_TOKEN}} ./scripts/verify-branch-protection.sh
+
+# Offline shim test — runs in CI without secrets.
+test-branch-protection:
+    bash tests/branch-protection.test.sh
+
+# Run lint + validate + plan-sync + branch-protection test together
+check: lint validate test-plan-sync test-branch-protection
 
 # Run the full local test suite (shell integration tests + config validation)
 test-all:

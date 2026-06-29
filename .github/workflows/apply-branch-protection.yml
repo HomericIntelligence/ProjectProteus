@@ -1,0 +1,40 @@
+name: Apply Branch Protection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/branch-protection.main.json'
+      - 'scripts/apply-branch-protection.sh'
+      - 'scripts/verify-branch-protection.sh'
+      - '.github/workflows/apply-branch-protection.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apply-branch-protection-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: apply-branch-protection
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11  # v0.9.6
+        with:
+          pixi-version: v0.67.2
+      - name: Validate JSON
+        run: pixi run jq . .github/branch-protection.main.json >/dev/null
+      - name: Apply ruleset
+        env:
+          GITHUB_TOKEN: ${{ secrets.BRANCH_PROTECTION_PAT }}
+        run: bash scripts/apply-branch-protection.sh
+      - name: Verify ruleset
+        env:
+          GITHUB_TOKEN: ${{ secrets.BRANCH_PROTECTION_PAT }}
+        run: bash scripts/verify-branch-protection.sh

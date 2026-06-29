@@ -20,9 +20,9 @@ provisioning. Branch protection is the last guardrail.
 | Restrict deletions | **on** | — |
 | Restrict pushes (no force-pushes, no direct commits) | **on** | — |
 | Require pull request before merging | **on** | — |
-| Required approving review count | **1** (minimum) | #95 |
+| Required approving review count | **1** (minimum) | #95 (enforced) |
 | Dismiss stale approvals on new commits | **on** | — |
-| Require review from code owners | **on** | #102 (applied via scripts/branch-protection-apply.sh) |
+| Require review from code owners | **on** | #102 (enforced via API; CODEOWNERS coverage audit remains open) |
 | Require status checks to pass | **on** | — |
 | Required status checks | see below | #94 |
 | Require branches to be up to date before merging | **on** | — |
@@ -31,52 +31,40 @@ provisioning. Branch protection is the last guardrail.
 
 ### Required status checks
 
-The following CI checks (from `.github/workflows/_required.yml`,
-`ci.yml`, `cross-repo-dispatch.yml`, and `promote.yml`) are the
-authoritative required set:
+The following CI checks (from `.github/workflows/_required.yml` and `ci.yml`)
+are the authoritative required set. Names match the workflow job `name:` field,
+which is what GitHub uses for protection contexts:
 
-- `lint-scripts` (CI / shellcheck)
-- `typecheck` (CI / `tsc --noEmit`)
+- `lint` (shellcheck + yamllint + mypy)
+- `Lint Shell Scripts` (ci.yml)
+- `TypeScript Type Check` (ci.yml)
 - `forbid-suppressions` (no-silent-failures guard)
-- `unit-tests` (YAML schema validation; to be replaced by real tests — #88)
-- `integration-tests` (cross-config reference check; to be expanded — #89)
-- `markdownlint` (docs lint)
-- `security/npm-audit` (npm audit for known CVEs — #23)
-- `security/secrets-scan` (Gitleaks SARIF upload + PR gating — #23, #86)
-- `CodeQL / javascript-typescript` (SAST for TypeScript — #23)
+- `unit-tests` (placeholder; to be replaced — #88)
+- `integration-tests` (placeholder; to be expanded — #89)
+- `schema-validation` (YAML pipeline config validation)
+- `markdownlint` (documentation lint)
+- `pixi-check` (pixi lock file consistency)
+- `justfile-check` (justfile validation)
+- `symlink-check` (verify all symlinks resolve)
+- `build` (dagger build test)
+- `security/secrets-scan` (gitleaks)
+- `security/dependency-scan` (dependency audit)
+- `branch-protection-test` (offline branch protection verification)
 
-A required status check that does not actually run on a PR will block
-merges; whenever a check is renamed, this list must be updated in the
-same PR.
+## Enforcement
 
-## Why we are not enforcing this today
+The ruleset above is the **literal** body of `.github/branch-protection.main.json`.
+It is applied automatically by `.github/workflows/apply-branch-protection.yml`
+on every push to `main` that modifies the JSON file, using the admin-scoped
+`BRANCH_PROTECTION_PAT` repository secret.
 
-The defects in #95 (zero required approvals) and #102 (CODEOWNERS not
-enforced in branch protection) are tracked separately. This document
-exists so the next maintainer with admin access can apply the policy
-in one pass without re-deriving it.
+Manual operations (admin token required):
 
-## Procedure to apply
+- Apply / re-apply: `GITHUB_TOKEN=<admin-pat> just apply-branch-protection`
+- Detect drift:    `GITHUB_TOKEN=<admin-pat> just verify-branch-protection`
 
-The repo-level apply is scripted and idempotent:
-
-1. `gh auth status` — confirm authentication has admin scope on the repo.
-2. `just branch-protection-dry-run` — prints the merged payload **without
-   PUT-ing it**. Review that `required_status_checks.contexts` lists the
-   expected checks from #94, `required_approving_review_count` matches #95,
-   and `restrictions` (if non-null) lists the expected users/teams/apps.
-3. `just branch-protection-apply` — performs read-modify-write: every sibling
-   field on `branches/main/protection` is round-tripped verbatim; only
-   `require_code_owner_reviews` is mutated to `true`. Safe to re-run.
-4. Verify:
-   `gh api repos/HomericIntelligence/ProjectProteus/branches/main/protection --jq '.required_pull_request_reviews.require_code_owner_reviews'`
-   prints `true`.
-5. Close #102 once step 4 returns `true`.
-
-The script uses `gh api -i` to parse HTTP status lines from stdout (a stable
-contract across `gh` versions), so 404 (no existing protection) is handled by
-creating minimal protection, while 401/403 (insufficient scope) fail fast with
-an explicit error.
+Offline regression coverage runs on every PR via `_required.yml` →
+`branch-protection-test`; no token is required.
 
 ## See also
 

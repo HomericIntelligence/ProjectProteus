@@ -107,11 +107,14 @@ before assuming the defect is unfixed.
   Flip this entry to "resolved" only after #5 closes.
 - **GitHub Actions security gaps.** Gitleaks runs with `--exit-code 0` (#86);
   treat absence of a Gitleaks failure as inconclusive. (Trivy gate restored — #85 closed.)
-- **Branch protection partial.** PRs require zero reviews (#95); CODEOWNERS
-  enforcement is now applied via `scripts/branch-protection-apply.sh` (#102),
-  which preserves all sibling fields on the protection endpoint (status checks,
-  approving review count, push restrictions). See `docs/branch-protection.md`
-  for the target state and procedure.
+- **Branch protection is enforced** via `.github/branch-protection.main.json`.
+  The `.github/workflows/apply-branch-protection.yml` workflow re-applies the
+  ruleset on every change to that file using the `BRANCH_PROTECTION_PAT`
+  secret. `just verify-branch-protection` (read-only) detects drift;
+  `tests/branch-protection.test.sh` runs offline in CI as the
+  `branch-protection-test` required check. (Closes #95. Partially closes
+  #102 — `require_code_owner_reviews=true` flips here; the CODEOWNERS
+  coverage audit tracked in #102 remains open.)
 
 Agents must not silently work around these defects; instead, link the
 relevant issue from any PR that touches the affected code.
