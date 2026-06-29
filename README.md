@@ -117,7 +117,7 @@ name: <service-name>                    # Identifier for the pipeline
 description: >
   Description of what this pipeline does.
 
-on:                                     # Trigger events
+triggers:                               # Trigger events
   - event: image-pushed                 # Event type (image-pushed, repository_dispatch, etc.)
     repo: HomericIntelligence/<RepoName> # Source repository
 
@@ -137,9 +137,9 @@ stages:
   - name: promote
     type: skopeo                        # Use Skopeo for image promotion
     script: scripts/promote-image.sh    # Script to invoke
-    args:
-      src: "ghcr.io/homeric-intelligence/<service>:staging"
-      dest: "ghcr.io/homeric-intelligence/<service>:latest"
+    args:                               # Positional args as ordered list (not dict)
+      - "ghcr.io/homeric-intelligence/<service>:staging"
+      - "ghcr.io/homeric-intelligence/<service>:latest"
     depends_on: [test]
 
 notifications:
@@ -160,10 +160,13 @@ See `configs/pipelines/achaean-fleet.yaml` for a complete example.
 
 2. **Write the pipeline definition** following the schema above, adapting the registry paths, stages, and triggers for your service.
 
-3. **Validate the config:**
+3. **Schema-validate the config:**
    ```bash
    just validate
    ```
+   Validates every file in `configs/pipelines/` against the committed
+   JSON Schema (`configs/pipelines/schema.json`) — not just YAML syntax.
+   See `KNOWN_LIMITATIONS.md` for the `notifications:` follow-up.
 
 4. **Test the pipeline locally** (requires Dagger and Skopeo):
    ```bash

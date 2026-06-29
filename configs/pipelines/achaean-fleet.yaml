@@ -6,7 +6,7 @@ description: >
   Full CI/CD pipeline for AchaeanFleet service images.
   On each image push: build → test → promote staging→latest → dispatch Myrmidons apply.
 
-on:
+triggers:
   - event: image-pushed
     repo: HomericIntelligence/AchaeanFleet
 
@@ -33,15 +33,15 @@ stages:
     type: skopeo
     script: scripts/promote-image.sh
     args:
-      src: "ghcr.io/homeric-intelligence/achaean-fleet:staging"
-      dest: "ghcr.io/homeric-intelligence/achaean-fleet:latest"
+      - "ghcr.io/homeric-intelligence/achaean-fleet:staging"
+      - "ghcr.io/homeric-intelligence/achaean-fleet:latest"
     depends_on: [test]
 
   - name: dispatch-apply
     type: dispatch
     script: scripts/dispatch-apply.sh
     args:
-      host: hermes
+      - "hermes"
     depends_on: [promote]
 
 notifications:

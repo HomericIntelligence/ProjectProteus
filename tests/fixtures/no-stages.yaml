@@ -1,0 +1,6 @@
+name: broken
+description: Pipeline with no stages
+triggers:
+  - event: test
+    repo: test/repo
+stages: []

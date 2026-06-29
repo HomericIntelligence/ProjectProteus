@@ -1,0 +1,18 @@
+name: broken
+description: Cyclic stage dependencies
+triggers:
+  - event: test
+    repo: test/repo
+stages:
+  - name: a
+    type: dagger
+    function: build
+    args:
+      context: "."
+    depends_on: [b]
+  - name: b
+    type: dagger
+    function: test
+    args:
+      command: "echo test"
+    depends_on: [a]

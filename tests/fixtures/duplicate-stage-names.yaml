@@ -1,0 +1,16 @@
+name: broken
+description: Duplicate stage names
+triggers:
+  - event: test
+    repo: test/repo
+stages:
+  - name: build
+    type: dagger
+    function: build
+    args:
+      context: "."
+  - name: build
+    type: dagger
+    function: test
+    args:
+      command: "echo test"

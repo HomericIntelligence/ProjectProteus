@@ -1,0 +1,13 @@
+{
+  "follow_ups": [],
+  "rejected": [
+    {
+      "title": "Update pixi.toml to use 'depends-on' instead of deprecated 'depends_on'",
+      "reason": "Tooling/config suggestion; not a defect in the core proteus library functionality."
+    },
+    {
+      "title": "Add integration tests with actual template variable expansion",
+      "reason": "Test coverage enhancement for working code; not a defect, security issue, or bug."
+    }
+  ]
+}
