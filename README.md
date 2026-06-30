@@ -1,6 +1,8 @@
 # ProjectProteus
 
 [![CI](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/ci.yml/badge.svg)](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/ci.yml)
+[![Promote](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/promote.yml/badge.svg)](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/promote.yml)
+[![Cross-Repo Dispatch](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/cross-repo-dispatch.yml/badge.svg)](https://github.com/HomericIntelligence/ProjectProteus/actions/workflows/cross-repo-dispatch.yml)
 
 CI/CD pipeline automation hub for the HomericIntelligence ecosystem.
 
